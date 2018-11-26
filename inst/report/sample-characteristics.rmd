@@ -1,0 +1,11 @@
+## Sample characteristics
+
+For continuous or ordinal variables, the "mean" column provides the mean
+and the "sd/%" column the standard deviation of the variable.
+For categorical variables, the "mean" column provides the number
+of samples with the given "value" and the
+"sd/%" column the percentage of samples with the given "value".
+
+```{r}
+knitr::kable(object$sample.characteristics)
+```

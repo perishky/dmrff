@@ -1,0 +1,17 @@
+### Covariate `r covariate.name`
+
+```{r}
+output <- object$covariate.associations[[covariate.name]]$output
+for (name in names(output)) {
+    cat("", name, sep="\n")
+    print(output[[name]])
+}
+```
+
+```{r}
+fig.width <- 1 + opts_chunk$get("fig.width")
+```
+
+```{r,message=F,fig.width=fig.width}
+(object$covariate.associations[[covariate.name]]$plot)
+```
