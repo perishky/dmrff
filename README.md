@@ -20,3 +20,5 @@ false positive rates (e.g. comb-p) or suffer from low power (e.g. bumphunter).
 
 A manuscript describing *dmrff* and evaluating its performance will
 appear soon on bioRxiv.
+
+Examples showing how to apply *dmrff* can be found in the [tests](./tests) directory.
