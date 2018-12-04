@@ -36,10 +36,10 @@ for (i in 1:length(datasets)) {
 }
                            
 ## identify DMRs (there should be one)
-ret <- drmff.meta(lapply(datasets, function(dataset) dataset$pre),
+ret <- dmrff.meta(lapply(datasets, function(dataset) dataset$pre),
                   maxgap=500, p.cutoff=0.05, verbose=T)
-ret$dmrff[which(ret$dmrff$p.adjust < 0.05), ]
-## > ret$dmrff[which(ret$dmrff$p.adjust < 0.05), ]
+ret$dmrs[which(ret$dmrs$p.adjust < 0.05), ]
+## > ret$dmrs[which(ret$dmrs$p.adjust < 0.05), ]
 ##   chr start  end n start.idx end.idx start.orig end.orig   z.orig       p.orig
 ## 1   1  6485 6627 2        31      32         28       38 4.652635 3.277197e-06
 ## 2   1  6452 6452 1        30      30         28       38 4.652635 3.277197e-06
@@ -73,13 +73,17 @@ ret$ewas[with(ret$ewas, min(which(p.adjust < 0.05)):max(which(p.adjust < 0.05)))
 ## meta-analyse EWAS statistics
 library(metafor)
 ewas.ma.stats <- do.call(rbind, mclapply(1:n.sites, function(i) {
-    fit <- rma.uni(yi=sapply(datasets, function(dataset) dataset$pre$estimate[i]),
-                   sei=sapply(datasets, function(dataset) dataset$pre$se[i]),
-                   method="FE")
-    c(estimate=unname(fit$b["intrcpt",1]),
-      se=fit$se,
-      z=fit$zval,
-      p.value=fit$pval)
+    tryCatch({
+        fit <- rma.uni(yi=sapply(datasets, function(dataset) dataset$pre$estimate[i]),
+                       sei=sapply(datasets, function(dataset) dataset$pre$se[i]),
+                       method="FE")
+        c(estimate=unname(fit$b["intrcpt",1]),
+          se=fit$se,
+          z=fit$zval,
+          p.value=fit$pval)
+    }, error=function(e) {
+        c(estimate=0,se=1,z=0,p.value=1)
+    })
 }))
 ewas.ma.stats <- as.data.frame(ewas.ma.stats)
 
@@ -137,12 +141,12 @@ for (i in 1:nrow(dmr.ma.stats)) {
 ## the same dmrs should be identified by both methods
 x <- dmr.ma.stats[which(dmr.ma.stats$best & dmr.ma.stats$p.adjust < 0.05),
              c("chr","start","end","z")]
-y <- ret$dmrff[which(ret$dmrff$p.adjust < 0.05),
+y <- ret$dmrs[which(ret$dmrs$p.adjust < 0.05),
                c("chr","start","end","z")]
 stopifnot(all(sort(apply(x, 1, paste)) == sort(apply(y, 1, paste))))
 
 ## z-scores for the same regions should be identical
-dmr.ma.stats <- dmr.ma.stats[match(with(ret$dmrff, paste(chr, start, end)),
+dmr.ma.stats <- dmr.ma.stats[match(with(ret$dmrs, paste(chr, start, end)),
                                    with(dmr.ma.stats, paste(chr, start, end))),]
-stopifnot(diff(range(dmr.ma.stats$z - ret$dmrff$z)) < 1e-14)
+stopifnot(diff(range(dmr.ma.stats$z - ret$dmrs$z)) < 1e-14)
 

@@ -16,22 +16,34 @@
 #' pre2 <- dmrff.pre(est2, se2, p2, meth2, ...)
 #' ...
 #' pre9 <- dmrff.pre(est9, se9, p9, meth9, ...)
-#' dmrs <- dmrff.meta(list(pre1, pre2, ..., pre9))
-#' dmrs[which(dmrs$p.adjust < 0.05), ]
+#' meta <- dmrff.meta(list(pre1, pre2, ..., pre9))
+#' meta$dmrs[which(meta$dmrs$p.adjust < 0.05), ]
 #' 
 #' @export
 dmrff.meta <- function(objects, maxgap=500, p.cutoff=0.05, verbose=T) {
     stopifnot(is.list(objects))
     stopifnot(length(objects) > 1)
+
+    ## sort object data by genomic position
+    for (i in 1:length(objects)) {
+        idx <- order(objects[[i]]$chr, objects[[i]]$pos)
+        objects[[i]]$sites <- objects[[i]]$sites[idx]
+        objects[[i]]$chr <- objects[[i]]$chr[idx]
+        objects[[i]]$pos <- objects[[i]]$pos[idx]
+        objects[[i]]$estimate <- objects[[i]]$estimate[idx]
+        objects[[i]]$se <- objects[[i]]$se[idx]
+    }
     
     ## identify a set of CpG sites in every dataset
     sites <- objects[[1]]$sites
     for (i in 2:length(objects))
         sites <- intersect(sites, objects[[2]]$sites)
-
+    
     ## extract CpG site summary statistics
-    estimate <- sapply(objects, function(obj) obj$estimate[match(sites, obj$sites)])
-    se <- sapply(objects, function(obj) obj$se[match(sites, obj$sites)])
+    estimate <- sapply(objects, function(obj)
+                       obj$estimate[match(sites, obj$sites)])
+    se <- sapply(objects, function(obj)
+                 obj$se[match(sites, obj$sites)])
 
     ## meta-analysis CpG site associations
     ma <- ivwfe.ma(estimate, se)
@@ -41,50 +53,29 @@ dmrff.meta <- function(objects, maxgap=500, p.cutoff=0.05, verbose=T) {
 
     ## identify candidate regions
     candidates <- dmrff.candidates(ma$estimate, ma$p.value, ma$chr, ma$pos,
-                                   maxgap=maxgap, p.cutoff=p.cutoff, verbose=verbose)
-
-    ## replace candidates that are too long for 'rhos' with candidates that cover the region
-    max.size <- min(sapply(objects, function(object) ncol(object$rho)))
-    candidates <- chop.candidates(candidates, max.size)
+                                   maxgap=maxgap, p.cutoff=p.cutoff,
+                                   verbose=verbose)
 
     ## shrink candidate regions and meta-analysis statistics
-    stats <- shrink.candidates(candidates$start.idx, candidates$end.idx,
-                           function(start.idx,end.idx) {
-                               stats <- sapply(1:length(objects), function(i) {
-                                   start.idx <- which(objects[[i]]$sites == sites[start.idx])
-                                   end.idx <- which(objects[[i]]$sites == sites[end.idx])
-                                   idx <- start.idx:end.idx
-                                   ivwfe.stats(objects[[i]]$estimate[idx],
-                                               objects[[i]]$se[idx],
-                                               rho=extract.rho(objects[[i]]$rho[idx,,drop=F]))
-                               })
-                               ivwfe.ma(stats["B",,drop=F], stats["S",,drop=F])$z
-                           })
-    list(ewas=ma, 
-         dmrff=collate.stats(stats, ma$chr, ma$pos))
-}
-
-
-chop.candidates <- function(candidates, max.size) {        
-    candidates$size <- candidates$end.idx - candidates$start.idx + 1
-    long.idx <- which(candidates$size > max.size)
-    if (length(long.idx) > 0) {
-        replacements <- do.call(rbind, lapply(long.idx, function(candidate.idx) {
-            size <- candidates$size[candidate.idx]
-            tiles <- ceiling(size/(max.size/2))
-            start.idx <- (candidates$start.idx[candidate.idx]
-                          + floor(seq(0,size-max.size,length.out=tiles)))
-            end.idx <- start.idx + max.size - 1
-            data.frame(chr=candidates$chr[candidate.idx],
-                       start=pos[start.idx],
-                       end=pos[end.idx],
-                       candidate=candidates$candidate[candidate.idx],
-                       start.idx=start.idx,
-                       end.idx=end.idx)
-        }))
-        candidates <- rbind(candidates[-long.idx,], replacements)
+    compute.dmr.stats <- function(start.idx,end.idx) {
+        stats <- sapply(1:length(objects), function(i) {
+            start.idx <- which(objects[[i]]$sites == sites[start.idx])
+            end.idx <- which(objects[[i]]$sites == sites[end.idx])
+            idx <- start.idx:end.idx
+            if (length(idx) > ncol(objects[[i]]$rho))
+                return(c(B=0,S=1))
+            ivwfe.stats(objects[[i]]$estimate[idx],
+                        objects[[i]]$se[idx],
+                        rho=extract.rho(objects[[i]]$rho[idx,,drop=F]))
+        })
+        ivwfe.ma(stats["B",,drop=F], stats["S",,drop=F])$z
     }
-    candidates
+    stats <- shrink.candidates(candidates$start.idx,
+                               candidates$end.idx,
+                               compute.dmr.stats)
+
+    list(ewas=ma, 
+         dmrs=collate.stats(stats, ma$chr, ma$pos))
 }
 
 extract.rho <- function(pre) {
