@@ -1,6 +1,8 @@
 # dmrff
 
-Identifying differentially methylated regions (DMRs) efficiently with power and control
+dmrff: identifying differentially methylated regions efficiently with power and control
+Matthew Suderman, James R Staley, Robert French, Ryan Arathimos, Andrew Simpkin, Kate Tilling
+bioRxiv 508556; doi: https://doi.org/10.1101/508556
 
 *Background.* An epigenome-wide association study (EWAS) tests associations between epigenetic marks
 such as DNA methylation and a given phenotype or exposure.
