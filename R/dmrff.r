@@ -25,7 +25,7 @@
 #'               pos)      ## position of each CpG site
 #'                      
 #' dmrs[which(dmrs$p.adjust < 0.05),
-#'      c("chr","start","end","n", "z", "p.value","p.adjust")]
+#'      c("chr","start","end","n","B","S","z","p.value","p.adjust")]
 #'
 #' @export
 dmrff <- function(estimate, se, p.value, methylation, chr, pos,
@@ -55,6 +55,14 @@ dmrff <- function(estimate, se, p.value, methylation, chr, pos,
                                    ivwfe.getz(estimate[idx], se[idx], methylation[idx,,drop=F])
                                })
 
+    full <- do.call(rbind, mclapply(1:nrow(stats), function(i) {
+        idx <- stats$start.idx[i]:stats$end.idx[i]
+        ivwfe.stats(estimate[idx], se[idx], methylation[idx,,drop=F])
+    }))
+
+    stats$B <- full[,"B"]
+    stats$S <- full[,"S"]
+    
     collate.stats(stats, chr, pos)
 }
 
@@ -70,6 +78,8 @@ collate.stats <- function(stats, chr, pos) {
                                     end.orig=end.orig,
                                     z.orig=z.orig,
                                     p.orig=2*pnorm(-abs(z.orig), lower.tail=T),
+                                    B=B,
+                                    S=S,
                                     z=z,
                                     p.value=2*pnorm(-abs(z), lower.tail=T)))
     number.tests <- length(chr) + calculate.number.shrink.tests(stats)
