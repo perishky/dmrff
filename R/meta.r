@@ -56,7 +56,7 @@ dmrff.meta <- function(objects, maxgap=500, p.cutoff=0.05, verbose=T) {
                                    maxgap=maxgap, p.cutoff=p.cutoff,
                                    verbose=verbose)
 
-    ## shrink candidate regions and meta-analysis statistics
+    ## shrink candidate regions and meta-analyze statistics
     compute.dmr.stats <- function(start.idx,end.idx) {
         stats <- sapply(1:length(objects), function(i) {
             start.idx <- which(objects[[i]]$sites == sites[start.idx])
@@ -68,12 +68,24 @@ dmrff.meta <- function(objects, maxgap=500, p.cutoff=0.05, verbose=T) {
                         objects[[i]]$se[idx],
                         rho=extract.rho(objects[[i]]$rho[idx,,drop=F]))
         })
-        ivwfe.ma(stats["B",,drop=F], stats["S",,drop=F])$z
+        ivwfe.ma(stats["B",,drop=F], stats["S",,drop=F])
+    }
+    compute.dmr.z <- function(start.idx,end.idx) {
+        compute.dmr.stats(start.idx, end.idx)$z
     }
     stats <- shrink.candidates(candidates$start.idx,
                                candidates$end.idx,
-                               compute.dmr.stats)
+                               compute.dmr.z)
 
+    full <- do.call(rbind, mclapply(1:nrow(stats), function(i) {
+        compute.dmr.stats(stats$start.idx[i], stats$end.idx[i])
+    }))
+
+    stats$B <- NA
+    stats$S <- NA
+    stats$estimate <- full[,"estimate"]
+    stats$se <- full[,"se"]
+    
     list(ewas=ma, 
          dmrs=collate.stats(stats, ma$chr, ma$pos))
 }

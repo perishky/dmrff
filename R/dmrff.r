@@ -60,8 +60,8 @@ dmrff <- function(estimate, se, p.value, methylation, chr, pos,
         ivwfe.stats(estimate[idx], se[idx], methylation[idx,,drop=F])
     }))
 
-    stats$B <- full[,"B"]
-    stats$S <- full[,"S"]
+    stats$estimate <- stats$B <- full[,"B"]
+    stats$se <- stats$S <- full[,"S"]
     
     collate.stats(stats, chr, pos)
 }
@@ -80,6 +80,8 @@ collate.stats <- function(stats, chr, pos) {
                                     p.orig=2*pnorm(-abs(z.orig), lower.tail=T),
                                     B=B,
                                     S=S,
+                                    estimate=estimate,
+                                    se=se,
                                     z=z,
                                     p.value=2*pnorm(-abs(z), lower.tail=T)))
     number.tests <- length(chr) + calculate.number.shrink.tests(stats)
