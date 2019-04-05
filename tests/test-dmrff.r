@@ -1,5 +1,4 @@
-for (file in list.files("../R", ".r$", full.names=T))
-    source(file)
+library(dmrff)
 library(parallel)
 
 options(mc.cores=4)
