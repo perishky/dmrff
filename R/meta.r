@@ -24,21 +24,21 @@ dmrff.meta <- function(objects, maxgap=500, p.cutoff=0.05, verbose=T) {
     stopifnot(is.list(objects))
     stopifnot(length(objects) > 1)
 
-    ## sort object data by genomic position
+    ## sort object data by genomic position (rho is already sorted, see dmrff.pre)
     for (i in 1:length(objects)) {
         idx <- order(objects[[i]]$chr, objects[[i]]$pos)
         objects[[i]]$sites <- objects[[i]]$sites[idx]
         objects[[i]]$chr <- objects[[i]]$chr[idx]
         objects[[i]]$pos <- objects[[i]]$pos[idx]
-        objects[[i]]$estimate <- objects[[i]]$estimate[idx]
-        objects[[i]]$se <- objects[[i]]$se[idx]
+        objects[[i]]$estimate <- as.numeric(objects[[i]]$estimate[idx])
+        objects[[i]]$se <- as.numeric(objects[[i]]$se[idx])
     }
     
     ## identify a set of CpG sites in every dataset
     sites <- objects[[1]]$sites
     for (i in 2:length(objects))
-        sites <- intersect(sites, objects[[2]]$sites)
-    
+        sites <- intersect(sites, objects[[i]]$sites)
+
     ## extract CpG site summary statistics
     estimate <- sapply(objects, function(obj)
                        obj$estimate[match(sites, obj$sites)])

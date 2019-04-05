@@ -22,6 +22,17 @@ ivwfe.stats <- function(coef, se, mat=NULL, rho=NULL) {
     }
     ## The second diagonal matrix is the 'nudge' matrix to ensure matrix inversion
 
+    ## remove missing values
+    na <- is.na(coef) | is.na(se)
+    if (sum(na) > 0) {
+        if (sum(na) == length(coef))
+            return(c(B=NA, S=NA))
+
+        coef <- coef[!na]
+        se <- se[!na]
+        rho <- rho[!na,!na,drop=F]
+    }
+    
     omega <- (se%*%t(se))*rho
     omega.inv <- solve(omega)
     one <- matrix(1,nrow=nrow(omega.inv), ncol=1)
@@ -44,8 +55,8 @@ ivwfe.rho <- function(mat) {
 
 ivwfe.ma <- function(estimates, se) {
     weights <- 1/se^2
-    se <- sqrt(1/rowSums(weights))
-    estimates <- rowSums(estimates * weights)/rowSums(weights)
+    se <- sqrt(1/rowSums(weights, na.rm=T))
+    estimates <- rowSums(estimates * weights, na.rm=T)/rowSums(weights, na.rm=T)
     z <- estimates/se
     p <- 2*pnorm(-abs(z), lower.tail=T)
     data.frame(estimate=estimates,
@@ -53,3 +64,4 @@ ivwfe.ma <- function(estimates, se) {
                z=z,
                p.value=p)
 }
+
