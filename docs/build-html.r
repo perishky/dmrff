@@ -29,6 +29,9 @@ knit.report <- function(input.filename, output.filename,
         markdownToHTML(md.filename, basename(output.filename), stylesheet=stylesheet)
 }
 
+options(markdown.HTML.options=union('toc', getOption("markdown.HTML.options")))
+options(markdown.HTML.stylesheet=file.path(getwd(), "style.css"))
+
 args = commandArgs(trailingOnly=TRUE)
 knit.report(args[1], args[2])
 
