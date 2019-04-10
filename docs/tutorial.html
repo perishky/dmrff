@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+<title>Download and prepare and prepare an example DNA methylation dataset</title>
+
+<script type="text/javascript">
+window.onload = function() {
+  var imgs = document.getElementsByTagName('img'), i, img;
+  for (i = 0; i < imgs.length; i++) {
+    img = imgs[i];
+    // center an image if it is the only element of its parent
+    if (img.parentElement.childElementCount === 1)
+      img.parentElement.style.textAlign = 'center';
+  }
+};
+</script>
+
+<!-- Styles for R syntax highlighter -->
+<style type="text/css">
+   pre .operator,
+   pre .paren {
+     color: rgb(104, 118, 135)
+   }
+
+   pre .literal {
+     color: #990073
+   }
+
+   pre .number {
+     color: #099;
+   }
+
+   pre .comment {
+     color: #998;
+     font-style: italic
+   }
+
+   pre .keyword {
+     color: #900;
+     font-weight: bold
+   }
+
+   pre .identifier {
+     color: rgb(0, 0, 0);
+   }
+
+   pre .string {
+     color: #d14;
+   }
+</style>
+
+<!-- R syntax highlighter -->
+<script type="text/javascript">
+var hljs=new function(){function m(p){return p.replace(/&/gm,"&amp;").replace(/</gm,"&lt;")}function f(r,q,p){return RegExp(q,"m"+(r.cI?"i":"")+(p?"g":""))}function b(r){for(var p=0;p<r.childNodes.length;p++){var q=r.childNodes[p];if(q.nodeName=="CODE"){return q}if(!(q.nodeType==3&&q.nodeValue.match(/\s+/))){break}}}function h(t,s){var p="";for(var r=0;r<t.childNodes.length;r++){if(t.childNodes[r].nodeType==3){var q=t.childNodes[r].nodeValue;if(s){q=q.replace(/\n/g,"")}p+=q}else{if(t.childNodes[r].nodeName=="BR"){p+="\n"}else{p+=h(t.childNodes[r])}}}if(/MSIE [678]/.test(navigator.userAgent)){p=p.replace(/\r/g,"\n")}return p}function a(s){var r=s.className.split(/\s+/);r=r.concat(s.parentNode.className.split(/\s+/));for(var q=0;q<r.length;q++){var p=r[q].replace(/^language-/,"");if(e[p]){return p}}}function c(q){var p=[];(function(s,t){for(var r=0;r<s.childNodes.length;r++){if(s.childNodes[r].nodeType==3){t+=s.childNodes[r].nodeValue.length}else{if(s.childNodes[r].nodeName=="BR"){t+=1}else{if(s.childNodes[r].nodeType==1){p.push({event:"start",offset:t,node:s.childNodes[r]});t=arguments.callee(s.childNodes[r],t);p.push({event:"stop",offset:t,node:s.childNodes[r]})}}}}return t})(q,0);return p}function k(y,w,x){var q=0;var z="";var s=[];function u(){if(y.length&&w.length){if(y[0].offset!=w[0].offset){return(y[0].offset<w[0].offset)?y:w}else{return w[0].event=="start"?y:w}}else{return y.length?y:w}}function t(D){var A="<"+D.nodeName.toLowerCase();for(var B=0;B<D.attributes.length;B++){var C=D.attributes[B];A+=" "+C.nodeName.toLowerCase();if(C.value!==undefined&&C.value!==false&&C.value!==null){A+='="'+m(C.value)+'"'}}return A+">"}while(y.length||w.length){var v=u().splice(0,1)[0];z+=m(x.substr(q,v.offset-q));q=v.offset;if(v.event=="start"){z+=t(v.node);s.push(v.node)}else{if(v.event=="stop"){var p,r=s.length;do{r--;p=s[r];z+=("</"+p.nodeName.toLowerCase()+">")}while(p!=v.node);s.splice(r,1);while(r<s.length){z+=t(s[r]);r++}}}}return z+m(x.substr(q))}function j(){function q(x,y,v){if(x.compiled){return}var u;var s=[];if(x.k){x.lR=f(y,x.l||hljs.IR,true);for(var w in x.k){if(!x.k.hasOwnProperty(w)){continue}if(x.k[w] instanceof Object){u=x.k[w]}else{u=x.k;w="keyword"}for(var r in u){if(!u.hasOwnProperty(r)){continue}x.k[r]=[w,u[r]];s.push(r)}}}if(!v){if(x.bWK){x.b="\\b("+s.join("|")+")\\s"}x.bR=f(y,x.b?x.b:"\\B|\\b");if(!x.e&&!x.eW){x.e="\\B|\\b"}if(x.e){x.eR=f(y,x.e)}}if(x.i){x.iR=f(y,x.i)}if(x.r===undefined){x.r=1}if(!x.c){x.c=[]}x.compiled=true;for(var t=0;t<x.c.length;t++){if(x.c[t]=="self"){x.c[t]=x}q(x.c[t],y,false)}if(x.starts){q(x.starts,y,false)}}for(var p in e){if(!e.hasOwnProperty(p)){continue}q(e[p].dM,e[p],true)}}function d(B,C){if(!j.called){j();j.called=true}function q(r,M){for(var L=0;L<M.c.length;L++){if((M.c[L].bR.exec(r)||[null])[0]==r){return M.c[L]}}}function v(L,r){if(D[L].e&&D[L].eR.test(r)){return 1}if(D[L].eW){var M=v(L-1,r);return M?M+1:0}return 0}function w(r,L){return L.i&&L.iR.test(r)}function K(N,O){var M=[];for(var L=0;L<N.c.length;L++){M.push(N.c[L].b)}var r=D.length-1;do{if(D[r].e){M.push(D[r].e)}r--}while(D[r+1].eW);if(N.i){M.push(N.i)}return f(O,M.join("|"),true)}function p(M,L){var N=D[D.length-1];if(!N.t){N.t=K(N,E)}N.t.lastIndex=L;var r=N.t.exec(M);return r?[M.substr(L,r.index-L),r[0],false]:[M.substr(L),"",true]}function z(N,r){var L=E.cI?r[0].toLowerCase():r[0];var M=N.k[L];if(M&&M instanceof Array){return M}return false}function F(L,P){L=m(L);if(!P.k){return L}var r="";var O=0;P.lR.lastIndex=0;var M=P.lR.exec(L);while(M){r+=L.substr(O,M.index-O);var N=z(P,M);if(N){x+=N[1];r+='<span class="'+N[0]+'">'+M[0]+"</span>"}else{r+=M[0]}O=P.lR.lastIndex;M=P.lR.exec(L)}return r+L.substr(O,L.length-O)}function J(L,M){if(M.sL&&e[M.sL]){var r=d(M.sL,L);x+=r.keyword_count;return r.value}else{return F(L,M)}}function I(M,r){var L=M.cN?'<span class="'+M.cN+'">':"";if(M.rB){y+=L;M.buffer=""}else{if(M.eB){y+=m(r)+L;M.buffer=""}else{y+=L;M.buffer=r}}D.push(M);A+=M.r}function G(N,M,Q){var R=D[D.length-1];if(Q){y+=J(R.buffer+N,R);return false}var P=q(M,R);if(P){y+=J(R.buffer+N,R);I(P,M);return P.rB}var L=v(D.length-1,M);if(L){var O=R.cN?"</span>":"";if(R.rE){y+=J(R.buffer+N,R)+O}else{if(R.eE){y+=J(R.buffer+N,R)+O+m(M)}else{y+=J(R.buffer+N+M,R)+O}}while(L>1){O=D[D.length-2].cN?"</span>":"";y+=O;L--;D.length--}var r=D[D.length-1];D.length--;D[D.length-1].buffer="";if(r.starts){I(r.starts,"")}return R.rE}if(w(M,R)){throw"Illegal"}}var E=e[B];var D=[E.dM];var A=0;var x=0;var y="";try{var s,u=0;E.dM.buffer="";do{s=p(C,u);var t=G(s[0],s[1],s[2]);u+=s[0].length;if(!t){u+=s[1].length}}while(!s[2]);if(D.length>1){throw"Illegal"}return{r:A,keyword_count:x,value:y}}catch(H){if(H=="Illegal"){return{r:0,keyword_count:0,value:m(C)}}else{throw H}}}function g(t){var p={keyword_count:0,r:0,value:m(t)};var r=p;for(var q in e){if(!e.hasOwnProperty(q)){continue}var s=d(q,t);s.language=q;if(s.keyword_count+s.r>r.keyword_count+r.r){r=s}if(s.keyword_count+s.r>p.keyword_count+p.r){r=p;p=s}}if(r.language){p.second_best=r}return p}function i(r,q,p){if(q){r=r.replace(/^((<[^>]+>|\t)+)/gm,function(t,w,v,u){return w.replace(/\t/g,q)})}if(p){r=r.replace(/\n/g,"<br>")}return r}function n(t,w,r){var x=h(t,r);var v=a(t);var y,s;if(v){y=d(v,x)}else{return}var q=c(t);if(q.length){s=document.createElement("pre");s.innerHTML=y.value;y.value=k(q,c(s),x)}y.value=i(y.value,w,r);var u=t.className;if(!u.match("(\\s|^)(language-)?"+v+"(\\s|$)")){u=u?(u+" "+v):v}if(/MSIE [678]/.test(navigator.userAgent)&&t.tagName=="CODE"&&t.parentNode.tagName=="PRE"){s=t.parentNode;var p=document.createElement("div");p.innerHTML="<pre><code>"+y.value+"</code></pre>";t=p.firstChild.firstChild;p.firstChild.cN=s.cN;s.parentNode.replaceChild(p.firstChild,s)}else{t.innerHTML=y.value}t.className=u;t.result={language:v,kw:y.keyword_count,re:y.r};if(y.second_best){t.second_best={language:y.second_best.language,kw:y.second_best.keyword_count,re:y.second_best.r}}}function o(){if(o.called){return}o.called=true;var r=document.getElementsByTagName("pre");for(var p=0;p<r.length;p++){var q=b(r[p]);if(q){n(q,hljs.tabReplace)}}}function l(){if(window.addEventListener){window.addEventListener("DOMContentLoaded",o,false);window.addEventListener("load",o,false)}else{if(window.attachEvent){window.attachEvent("onload",o)}else{window.onload=o}}}var e={};this.LANGUAGES=e;this.highlight=d;this.highlightAuto=g;this.fixMarkup=i;this.highlightBlock=n;this.initHighlighting=o;this.initHighlightingOnLoad=l;this.IR="[a-zA-Z][a-zA-Z0-9_]*";this.UIR="[a-zA-Z_][a-zA-Z0-9_]*";this.NR="\\b\\d+(\\.\\d+)?";this.CNR="\\b(0[xX][a-fA-F0-9]+|(\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?)";this.BNR="\\b(0b[01]+)";this.RSR="!|!=|!==|%|%=|&|&&|&=|\\*|\\*=|\\+|\\+=|,|\\.|-|-=|/|/=|:|;|<|<<|<<=|<=|=|==|===|>|>=|>>|>>=|>>>|>>>=|\\?|\\[|\\{|\\(|\\^|\\^=|\\||\\|=|\\|\\||~";this.ER="(?![\\s\\S])";this.BE={b:"\\\\.",r:0};this.ASM={cN:"string",b:"'",e:"'",i:"\\n",c:[this.BE],r:0};this.QSM={cN:"string",b:'"',e:'"',i:"\\n",c:[this.BE],r:0};this.CLCM={cN:"comment",b:"//",e:"$"};this.CBLCLM={cN:"comment",b:"/\\*",e:"\\*/"};this.HCM={cN:"comment",b:"#",e:"$"};this.NM={cN:"number",b:this.NR,r:0};this.CNM={cN:"number",b:this.CNR,r:0};this.BNM={cN:"number",b:this.BNR,r:0};this.inherit=function(r,s){var p={};for(var q in r){p[q]=r[q]}if(s){for(var q in s){p[q]=s[q]}}return p}}();hljs.LANGUAGES.cpp=function(){var a={keyword:{"false":1,"int":1,"float":1,"while":1,"private":1,"char":1,"catch":1,"export":1,virtual:1,operator:2,sizeof:2,dynamic_cast:2,typedef:2,const_cast:2,"const":1,struct:1,"for":1,static_cast:2,union:1,namespace:1,unsigned:1,"long":1,"throw":1,"volatile":2,"static":1,"protected":1,bool:1,template:1,mutable:1,"if":1,"public":1,friend:2,"do":1,"return":1,"goto":1,auto:1,"void":2,"enum":1,"else":1,"break":1,"new":1,extern:1,using:1,"true":1,"class":1,asm:1,"case":1,typeid:1,"short":1,reinterpret_cast:2,"default":1,"double":1,register:1,explicit:1,signed:1,typename:1,"try":1,"this":1,"switch":1,"continue":1,wchar_t:1,inline:1,"delete":1,alignof:1,char16_t:1,char32_t:1,constexpr:1,decltype:1,noexcept:1,nullptr:1,static_assert:1,thread_local:1,restrict:1,_Bool:1,complex:1},built_in:{std:1,string:1,cin:1,cout:1,cerr:1,clog:1,stringstream:1,istringstream:1,ostringstream:1,auto_ptr:1,deque:1,list:1,queue:1,stack:1,vector:1,map:1,set:1,bitset:1,multiset:1,multimap:1,unordered_set:1,unordered_map:1,unordered_multiset:1,unordered_multimap:1,array:1,shared_ptr:1}};return{dM:{k:a,i:"</",c:[hljs.CLCM,hljs.CBLCLM,hljs.QSM,{cN:"string",b:"'\\\\?.",e:"'",i:"."},{cN:"number",b:"\\b(\\d+(\\.\\d*)?|\\.\\d+)(u|U|l|L|ul|UL|f|F)"},hljs.CNM,{cN:"preprocessor",b:"#",e:"$"},{cN:"stl_container",b:"\\b(deque|list|queue|stack|vector|map|set|bitset|multiset|multimap|unordered_map|unordered_set|unordered_multiset|unordered_multimap|array)\\s*<",e:">",k:a,r:10,c:["self"]}]}}}();hljs.LANGUAGES.r={dM:{c:[hljs.HCM,{cN:"number",b:"\\b0[xX][0-9a-fA-F]+[Li]?\\b",e:hljs.IMMEDIATE_RE,r:0},{cN:"number",b:"\\b\\d+(?:[eE][+\\-]?\\d*)?L\\b",e:hljs.IMMEDIATE_RE,r:0},{cN:"number",b:"\\b\\d+\\.(?!\\d)(?:i\\b)?",e:hljs.IMMEDIATE_RE,r:1},{cN:"number",b:"\\b\\d+(?:\\.\\d*)?(?:[eE][+\\-]?\\d*)?i?\\b",e:hljs.IMMEDIATE_RE,r:0},{cN:"number",b:"\\.\\d+(?:[eE][+\\-]?\\d*)?i?\\b",e:hljs.IMMEDIATE_RE,r:1},{cN:"keyword",b:"(?:tryCatch|library|setGeneric|setGroupGeneric)\\b",e:hljs.IMMEDIATE_RE,r:10},{cN:"keyword",b:"\\.\\.\\.",e:hljs.IMMEDIATE_RE,r:10},{cN:"keyword",b:"\\.\\.\\d+(?![\\w.])",e:hljs.IMMEDIATE_RE,r:10},{cN:"keyword",b:"\\b(?:function)",e:hljs.IMMEDIATE_RE,r:2},{cN:"keyword",b:"(?:if|in|break|next|repeat|else|for|return|switch|while|try|stop|warning|require|attach|detach|source|setMethod|setClass)\\b",e:hljs.IMMEDIATE_RE,r:1},{cN:"literal",b:"(?:NA|NA_integer_|NA_real_|NA_character_|NA_complex_)\\b",e:hljs.IMMEDIATE_RE,r:10},{cN:"literal",b:"(?:NULL|TRUE|FALSE|T|F|Inf|NaN)\\b",e:hljs.IMMEDIATE_RE,r:1},{cN:"identifier",b:"[a-zA-Z.][a-zA-Z0-9._]*\\b",e:hljs.IMMEDIATE_RE,r:0},{cN:"operator",b:"<\\-(?!\\s*\\d)",e:hljs.IMMEDIATE_RE,r:2},{cN:"operator",b:"\\->|<\\-",e:hljs.IMMEDIATE_RE,r:1},{cN:"operator",b:"%%|~",e:hljs.IMMEDIATE_RE},{cN:"operator",b:">=|<=|==|!=|\\|\\||&&|=|\\+|\\-|\\*|/|\\^|>|<|!|&|\\||\\$|:",e:hljs.IMMEDIATE_RE,r:0},{cN:"operator",b:"%",e:"%",i:"\\n",r:1},{cN:"identifier",b:"`",e:"`",r:0},{cN:"string",b:'"',e:'"',c:[hljs.BE],r:0},{cN:"string",b:"'",e:"'",c:[hljs.BE],r:0},{cN:"paren",b:"[[({\\])}]",e:hljs.IMMEDIATE_RE,r:0}]}};
+hljs.initHighlightingOnLoad();
+</script>
+
+<!-- MathJax scripts -->
+<script type="text/javascript" src="https://cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+<style type="text/css">
+body, td {
+   font-family: sans-serif;
+   background-color: white;
+   font-size: 13px;
+}
+
+body {
+  max-width: 800px;
+  margin: auto;
+  padding: 1em;
+  line-height: 20px;
+}
+
+tt, code, pre {
+   font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace;
+}
+
+h1 {
+   font-size:2.2em;
+}
+
+h2 {
+   font-size:1.8em;
+}
+
+h3 {
+   font-size:1.4em;
+}
+
+h4 {
+   font-size:1.0em;
+}
+
+h5 {
+   font-size:0.9em;
+}
+
+h6 {
+   font-size:0.8em;
+}
+
+a:visited {
+   color: rgb(50%, 0%, 50%);
+}
+
+pre, img {
+  max-width: 100%;
+}
+pre {
+  overflow-x: auto;
+}
+pre code {
+   display: block; padding: 0.5em;
+}
+
+code {
+  font-size: 92%;
+  border: 1px solid #ccc;
+}
+
+code[class] {
+  background-color: #F8F8F8;
+}
+
+table, td, th {
+  border: none;
+}
+
+blockquote {
+   color:#666666;
+   margin:0;
+   padding-left: 1em;
+   border-left: 0.5em #EEE solid;
+}
+
+hr {
+   height: 0px;
+   border-bottom: none;
+   border-top-width: thin;
+   border-top-style: dotted;
+   border-top-color: #999999;
+}
+
+@media print {
+   * {
+      background: transparent !important;
+      color: black !important;
+      filter:none !important;
+      -ms-filter: none !important;
+   }
+
+   body {
+      font-size:12pt;
+      max-width:100%;
+   }
+
+   a, a:visited {
+      text-decoration: underline;
+   }
+
+   hr {
+      visibility: hidden;
+      page-break-before: always;
+   }
+
+   pre, blockquote {
+      padding-right: 1em;
+      page-break-inside: avoid;
+   }
+
+   tr, img {
+      page-break-inside: avoid;
+   }
+
+   img {
+      max-width: 100% !important;
+   }
+
+   @page :left {
+      margin: 15mm 20mm 15mm 10mm;
+   }
+
+   @page :right {
+      margin: 15mm 10mm 15mm 20mm;
+   }
+
+   p, h2, h3 {
+      orphans: 3; widows: 3;
+   }
+
+   h2, h3 {
+      page-break-after: avoid;
+   }
+}
+</style>
+
+
+
+</head>
+
+<body>
+<h2>Download and prepare and prepare an example DNA methylation dataset</h2>
+
+<p>We&#39;ll use a small cord blood DNA methylation dataset
+available on GEO: <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE69633">GSE69633</a>.</p>
+
+<p>Download data files:</p>
+
+<pre><code class="r">geo.url &lt;- &quot;ftp://ftp.ncbi.nlm.nih.gov/geo/series&quot;
+series.file &lt;- file.path(geo.url, &quot;GSE69nnn/GSE69633/matrix/GSE69633_series_matrix.txt.gz&quot;)
+if (!file.exists(basename(series.file)))
+  download.file(series.file, destfile=basename(series.file))
+data.file &lt;- file.path(geo.url, &quot;GSE69nnn/GSE69633/suppl/GSE69633_processed_betas_UCB_HM450K.txt.gz&quot;)
+if (!file.exists(basename(data.file)))
+  download.file(data.file, destfile=basename(data.file))
+</code></pre>
+
+<p>Retrieve sample information:</p>
+
+<pre><code class="r">samples &lt;- readLines(gzfile(basename(series.file)))
+start &lt;- grep(&quot;Sample_title&quot;, samples)
+end &lt;- grep(&quot;series_matrix_table_begin&quot;, samples)-1
+samples &lt;- read.table(textConnection(samples[start:end]), sep=&quot;\t&quot;, header=F)
+</code></pre>
+
+<pre><code class="r">samples &lt;- t(samples)
+colnames(samples) &lt;- sub(&quot;!Sample_&quot;, &quot;&quot;, samples[1,])
+samples &lt;- as.data.frame(samples[-1,], stringsAsFactors=F)
+samples$id &lt;- sub(&quot;^[^(]+\\((.*)\\)$&quot;, &quot;\\1&quot;, samples$title)
+</code></pre>
+
+<p>Format sample characteristics:</p>
+
+<pre><code class="r">idx &lt;- which(colnames(samples) == &quot;characteristics_ch1&quot;)
+characteristics &lt;- samples[,idx]
+colnames(characteristics) &lt;- sub(&quot;([^:]+):.*&quot;, &quot;\\1&quot;, characteristics[1,])
+rownames(characteristics) &lt;- samples$geo_accession
+characteristics &lt;- apply(characteristics, 2, function(x) sub(&quot;[^:]+: (.*)&quot;, &quot;\\1&quot;, x))
+characteristics &lt;- as.data.frame(characteristics, stringsAsFactors=F)
+for (name in c(&quot;socioeconomic score&quot;, &quot;gestational age&quot;, &quot;birth weight&quot;, &quot;pbconc (ng/dl)&quot;))
+    characteristics[[name]] &lt;- as.numeric(characteristics[[name]])
+colnames(characteristics) &lt;- sub(&quot; &quot;, &quot;.&quot;, colnames(characteristics))
+colnames(characteristics)[grep(&quot;pbconc&quot;, colnames(characteristics))] &lt;- &quot;pbconc&quot;
+</code></pre>
+
+<p>Load DNA methylation data.</p>
+
+<pre><code class="r">meth &lt;- read.table(gzfile(basename(data.file)), header=T)
+meth &lt;- meth[,-grep(&quot;Detection.Pval&quot;, colnames(meth))]
+meth &lt;- as.matrix(meth)
+</code></pre>
+
+<p>Match between samples in <code>samples</code>, <code>characteristics</code> and <code>meth</code>.</p>
+
+<pre><code class="r">idx &lt;- match(colnames(meth), paste0(&quot;X&quot;, sub(&quot;-&quot;, &quot;.&quot;, samples$id)))
+samples &lt;- samples[idx,]
+characteristics &lt;- characteristics[idx,]
+colnames(meth) &lt;- rownames(characteristics)
+</code></pre>
+
+<h2>Test DNA methylation associations</h2>
+
+<p>Prepare surrogate variables to handle unknown confounding.</p>
+
+<pre><code class="r">library(sva)
+</code></pre>
+
+<pre><code class="r">mod &lt;- model.matrix(~ gender + socioeconomic.score + gestational.age + smoke.ever + birth.weight + pbconc, characteristics)
+mod0 &lt;- mod[,1]
+set.seed(20190410)
+random.idx &lt;- sample(1:nrow(meth), 5000)
+sva.fit &lt;- sva(meth[random.idx,], mod=mod, mod0=mod0)
+</code></pre>
+
+<pre><code>## Number of significant surrogate variables is:  13 
+## Iteration (out of 5 ):1  2  3  4  5
+</code></pre>
+
+<p>Add surrogate variables to the model.</p>
+
+<pre><code class="r">design &lt;- cbind(mod, sva.fit$sv)
+</code></pre>
+
+<p>Test the associations using <code>limma</code>. </p>
+
+<pre><code class="r">library(limma)
+fit &lt;- lmFit(meth, design)
+fit &lt;- eBayes(fit)
+</code></pre>
+
+<p>Save the summary statistics for gestational age.</p>
+
+<pre><code class="r">stats &lt;- data.frame(estimate=fit$coefficients[,&quot;gestational.age&quot;],
+                    se=sqrt(fit$s2.post) * fit$stdev.unscaled[,&quot;gestational.age&quot;],
+                    p.value=fit$p.value[,&quot;gestational.age&quot;])
+</code></pre>
+
+<h2>Add genomic coordinates for CpG sites (Illumina Beadchips)</h2>
+
+<p><code>dmrff</code> and all other methods for identifying differentially methylated regions
+require information about the genomic locations of all CpG sites. </p>
+
+<p>If your data was generated using one of the Illumina BeadChips, then it is possible
+to annotate your EWAS summary statistics using the appropriate
+<a href="https://www.bioconductor.org/">Bioconductor</a> annotation package.</p>
+
+<p>For the Illumina 450K microaray, we use the
+<code>IlluminaHumanMethylation450kanno.ilmn12.hg19</code> package.</p>
+
+<pre><code class="r">if (!require(IlluminaHumanMethylation450kanno.ilmn12.hg19)) {
+    install.packages(&quot;BiocManager&quot;)
+    BiocManager::install(&quot;IlluminaHumanMethylation450kanno.ilmn12.hg19&quot;)
+    library(IlluminaHumanMethylation450kanno.ilmn12.hg19)
+}
+</code></pre>
+
+<p>If we were using the more recent Illumina MethylationEPIC BeadChip,
+then we would load the <code>IlluminaHumanMethylationEPICanno.ilm10b2.hg19</code> package instead.</p>
+
+<p>We construct an annotation data frame as follows:</p>
+
+<pre><code class="r">data(list=&quot;IlluminaHumanMethylation450kanno.ilmn12.hg19&quot;)
+data(Locations)
+data(Other)
+annotation &lt;- cbind(as.data.frame(Locations), as.data.frame(Other))
+</code></pre>
+
+<p>We then add the annotation to the <code>stats</code> object
+(<strong>Warning</strong>: we assume that the row names of the <code>stats</code> object
+are the Illumina CpG site identifiers, e.g. cg05775921).</p>
+
+<pre><code class="r">annotation &lt;- annotation[match(rownames(stats), rownames(annotation)),]
+stats &lt;- cbind(stats, annotation)
+</code></pre>
+
+<h2>Apply <code>dmrff</code> to summary statistics</h2>
+
+<p>If <code>dmrff</code> is not already installed, we install it and load it.</p>
+
+<pre><code class="r">if (!require(dmrff)) {
+    library(devtools)
+    install_github(&quot;perishky/dmrff&quot;)
+    library(dmrff)
+}
+</code></pre>
+
+<p>Below we assume that you have already performed an epigenome-wide association analysis
+and have loaded your summary statistics in R as a data frame <code>stats</code>
+which has the following columns:</p>
+
+<ul>
+<li><code>estimate</code> (regression coefficient),</li>
+<li><code>se</code> (standard error of the coefficient),</li>
+<li><code>p.value</code>,</li>
+<li><code>chr</code> (chromosome of the CpG site),</li>
+<li><code>pos</code> (position of the CpG site on the chromosome).</li>
+</ul>
+
+<p>We also assume that you have loaded your DNA methylation dataset in R as matrix <code>meth</code>
+for which rows correspond to CpG sites and columns to samples.
+The DNA methylation levels are necessary for <code>dmrff</code> to calculate
+and adjust for dependencies between CpG sites.</p>
+
+<p>Before running <code>dmrff</code>, ensure that the dataset is ordered by CpG site genomic position.</p>
+
+<pre><code class="r">idx &lt;- order(stats$chr, stats$pos)
+stats &lt;- stats[idx,]
+meth &lt;- meth[idx,]
+</code></pre>
+
+<p><code>dmrff</code> can then be applied as follows.</p>
+
+<pre><code class="r">dmrs &lt;- dmrff(estimate=stats$estimate,
+              se=stats$se,
+              p.value=stats$p.value,
+              methylation=meth,
+              chr=stats$chr,
+              pos=stats$pos,
+              maxgap=500,
+              verbose=T)
+</code></pre>
+
+<pre><code>## [dmrff.candidates] Wed Apr 10 12:11:26 2019 Found  27414  candidate bumps.
+</code></pre>
+
+<p>The algorithm will then identify differentially methylated regions by:</p>
+
+<ul>
+<li>Identifying regions composed of CpG sites with EWAS p-values &lt; 0.05 and consist direction of effect (at most 500bp between CpG sites &ndash; see <code>maxgap</code> parameter).</li>
+<li>Meta-analysing EWAS statistics within each region as well as sub-regions to identify the sub-region with lowest meta-analysed p-value.</li>
+<li>Adjusting meta-analysed p-values for multiple tests (all EWAS tests + sub-region meta-analysis tests).</li>
+<li>Finally, returning the DMR results.</li>
+</ul>
+
+<p>Our output <code>dmrs</code> is a data frame listing all genomic regions tested
+along with summary statistics for each.</p>
+
+<p>For example, the first 10 regions might look like the following:</p>
+
+<pre><code class="r">kable(dmrs[1:10,c(&quot;chr&quot;,&quot;start&quot;,&quot;end&quot;,&quot;n&quot;,&quot;estimate&quot;,&quot;se&quot;,&quot;z&quot;,&quot;p.value&quot;,&quot;p.adjust&quot;)])
+</code></pre>
+
+<table><thead>
+<tr>
+<th align="left">chr</th>
+<th align="right">start</th>
+<th align="right">end</th>
+<th align="right">n</th>
+<th align="right">estimate</th>
+<th align="right">se</th>
+<th align="right">z</th>
+<th align="right">p.value</th>
+<th align="right">p.adjust</th>
+</tr>
+</thead><tbody>
+<tr>
+<td align="left">chr6</td>
+<td align="right">31744831</td>
+<td align="right">31744927</td>
+<td align="right">3</td>
+<td align="right">-0.0052637</td>
+<td align="right">0.0011350</td>
+<td align="right">-4.6378024</td>
+<td align="right">0.0000035</td>
+<td align="right">1</td>
+</tr>
+<tr>
+<td align="left">chr6</td>
+<td align="right">31744636</td>
+<td align="right">31744636</td>
+<td align="right">1</td>
+<td align="right">-0.0132362</td>
+<td align="right">0.0037004</td>
+<td align="right">-3.5769566</td>
+<td align="right">0.0003476</td>
+<td align="right">1</td>
+</tr>
+<tr>
+<td align="left">chr6</td>
+<td align="right">31744612</td>
+<td align="right">31744612</td>
+<td align="right">1</td>
+<td align="right">-0.0150106</td>
+<td align="right">0.0044921</td>
+<td align="right">-3.3415449</td>
+<td align="right">0.0008331</td>
+<td align="right">1</td>
+</tr>
+<tr>
+<td align="left">chr6</td>
+<td align="right">31744391</td>
+<td align="right">31744391</td>
+<td align="right">1</td>
+<td align="right">-0.0098522</td>
+<td align="right">0.0029805</td>
+<td align="right">-3.3055030</td>
+<td align="right">0.0009481</td>
+<td align="right">1</td>
+</tr>
+<tr>
+<td align="left">chr6</td>
+<td align="right">31743769</td>
+<td align="right">31743952</td>
+<td align="right">5</td>
+<td align="right">-0.0028035</td>
+<td align="right">0.0009087</td>
+<td align="right">-3.0852055</td>
+<td align="right">0.0020341</td>
+<td align="right">1</td>
+</tr>
+<tr>
+<td align="left">chr6</td>
+<td align="right">31744037</td>
+<td align="right">31744339</td>
+<td align="right">3</td>
+<td align="right">-0.0016838</td>
+<td align="right">0.0013148</td>
+<td align="right">-1.2806828</td>
+<td align="right">0.2003051</td>
+<td align="right">1</td>
+</tr>
+<tr>
+<td align="left">chr6</td>
+<td align="right">31744033</td>
+<td align="right">31744033</td>
+<td align="right">1</td>
+<td align="right">-0.0006374</td>
+<td align="right">0.0009404</td>
+<td align="right">-0.6777688</td>
+<td align="right">0.4979183</td>
+<td align="right">1</td>
+</tr>
+<tr>
+<td align="left">chr6</td>
+<td align="right">31743986</td>
+<td align="right">31743986</td>
+<td align="right">1</td>
+<td align="right">0.0000130</td>
+<td align="right">0.0010535</td>
+<td align="right">0.0122943</td>
+<td align="right">0.9901908</td>
+<td align="right">1</td>
+</tr>
+<tr>
+<td align="left">chr6</td>
+<td align="right">31744398</td>
+<td align="right">31744524</td>
+<td align="right">2</td>
+<td align="right">-0.0038149</td>
+<td align="right">0.0015648</td>
+<td align="right">-2.4378715</td>
+<td align="right">0.0147740</td>
+<td align="right">1</td>
+</tr>
+<tr>
+<td align="left">chr6</td>
+<td align="right">31744545</td>
+<td align="right">31744545</td>
+<td align="right">1</td>
+<td align="right">-0.0123068</td>
+<td align="right">0.0051349</td>
+<td align="right">-2.3966699</td>
+<td align="right">0.0165448</td>
+<td align="right">1</td>
+</tr>
+</tbody></table>
+
+<p>Some regions contain only one CpG site.
+EWAS is just fine for identifying associations with single CpG sites,
+so we might just remove these regions from the output.</p>
+
+<pre><code class="r">dmrs &lt;- dmrs[which(dmrs$n &gt; 1),]
+</code></pre>
+
+<p>1769 regions with at least 2 CpG sites were tested.</p>
+
+<p>All genomic regions with p-value &lt; 0.05 (Bonferroni adjusted for multiple tests)
+can be listed as follows:</p>
+
+<pre><code class="r">kable(dmrs[which(dmrs$p.adjust &lt; 0.05),
+           c(&quot;chr&quot;,&quot;start&quot;,&quot;end&quot;,&quot;n&quot;,&quot;estimate&quot;,&quot;se&quot;,&quot;z&quot;,&quot;p.value&quot;,&quot;p.adjust&quot;)])
+</code></pre>
+
+<table><thead>
+<tr>
+<th align="left"></th>
+<th align="left">chr</th>
+<th align="right">start</th>
+<th align="right">end</th>
+<th align="right">n</th>
+<th align="right">estimate</th>
+<th align="right">se</th>
+<th align="right">z</th>
+<th align="right">p.value</th>
+<th align="right">p.adjust</th>
+</tr>
+</thead><tbody>
+<tr>
+<td align="left">2151</td>
+<td align="left">chr13</td>
+<td align="right">29148952</td>
+<td align="right">29149132</td>
+<td align="right">2</td>
+<td align="right">0.0085360</td>
+<td align="right">0.0015125</td>
+<td align="right">5.643680</td>
+<td align="right">0</td>
+<td align="right">0.0070554</td>
+</tr>
+<tr>
+<td align="left">2454</td>
+<td align="left">chr4</td>
+<td align="right">6695614</td>
+<td align="right">6695698</td>
+<td align="right">2</td>
+<td align="right">0.0104099</td>
+<td align="right">0.0018918</td>
+<td align="right">5.502625</td>
+<td align="right">0</td>
+<td align="right">0.0158602</td>
+</tr>
+<tr>
+<td align="left">2812</td>
+<td align="left">chr1</td>
+<td align="right">67519155</td>
+<td align="right">67519474</td>
+<td align="right">2</td>
+<td align="right">-0.0054861</td>
+<td align="right">0.0009986</td>
+<td align="right">-5.493554</td>
+<td align="right">0</td>
+<td align="right">0.0166972</td>
+</tr>
+</tbody></table>
+
+<p>We can also list the statistics for each CpG site in these regions.</p>
+
+<pre><code class="r">sites.idx &lt;- sapply(which(dmrs$p.adjust &lt; 0.05),
+                    function(dmr.idx) dmrs$start.idx[dmr.idx]:dmrs$end.idx[dmr.idx])
+sites.idx &lt;- unlist(sites.idx)
+kable(stats[sites.idx, c(&quot;chr&quot;,&quot;pos&quot;,&quot;UCSC_RefGene_Name&quot;,&quot;estimate&quot;,&quot;se&quot;,&quot;p.value&quot;)])
+</code></pre>
+
+<table><thead>
+<tr>
+<th align="left"></th>
+<th align="left">chr</th>
+<th align="right">pos</th>
+<th align="left">UCSC_RefGene_Name</th>
+<th align="right">estimate</th>
+<th align="right">se</th>
+<th align="right">p.value</th>
+</tr>
+</thead><tbody>
+<tr>
+<td align="left">cg15887927</td>
+<td align="left">chr13</td>
+<td align="right">29148952</td>
+<td align="left"></td>
+<td align="right">0.0062306</td>
+<td align="right">0.0022104</td>
+<td align="right">0.0087764</td>
+</tr>
+<tr>
+<td align="left">cg24561305</td>
+<td align="left">chr13</td>
+<td align="right">29149132</td>
+<td align="left"></td>
+<td align="right">0.0111855</td>
+<td align="right">0.0023987</td>
+<td align="right">0.0000706</td>
+</tr>
+<tr>
+<td align="left">cg26233331</td>
+<td align="left">chr4</td>
+<td align="right">6695614</td>
+<td align="left">S100P;S100P</td>
+<td align="right">0.0092628</td>
+<td align="right">0.0019054</td>
+<td align="right">0.0000411</td>
+</tr>
+<tr>
+<td align="left">cg22266967</td>
+<td align="left">chr4</td>
+<td align="right">6695698</td>
+<td align="left">S100P</td>
+<td align="right">0.0065167</td>
+<td align="right">0.0024427</td>
+<td align="right">0.0125828</td>
+</tr>
+<tr>
+<td align="left">cg01802975</td>
+<td align="left">chr1</td>
+<td align="right">67519155</td>
+<td align="left">SLC35D1</td>
+<td align="right">-0.0054169</td>
+<td align="right">0.0010328</td>
+<td align="right">0.0000144</td>
+</tr>
+<tr>
+<td align="left">cg17930550</td>
+<td align="left">chr1</td>
+<td align="right">67519474</td>
+<td align="left">SLC35D1</td>
+<td align="right">-0.0059922</td>
+<td align="right">0.0026819</td>
+<td align="right">0.0336787</td>
+</tr>
+</tbody></table>
+
+<h2>Annotating differentially methylated regions (Illumina Beadchips)</h2>
+
+<p>Using the CpG site annotations described earlier, we can also
+annotate differentially methylated regions.</p>
+
+<p>To save time, we will only annotate the top 50 differentially methylated regions.</p>
+
+<pre><code class="r">dmrs50 &lt;- dmrs[order(dmrs$p.value)[1:50],]
+</code></pre>
+
+<p>For annotation, we will use the following function.</p>
+
+<pre><code class="r">annotate.regions &lt;- function(dmrs, stats, package) {
+    if (!require(package, character.only=T)) {
+        install.packages(&quot;BiocManager&quot;)
+        BiocManager::install(package)
+        library(package, character.only=T)
+    }    
+    data(list=package)
+    data(Locations)
+    data(Other)
+    annotation &lt;- cbind(as.data.frame(Locations), as.data.frame(Other))
+
+    stopifnot(all(rownames(stats) %in% rownames(annotation)))
+
+    annotation &lt;- annotation[match(rownames(stats), rownames(annotation)),]
+    stats &lt;- cbind(stats, annotation)
+
+    dmrs.annot &lt;- lapply(1:nrow(dmrs), function(dmr.idx) {
+        annotation$Forward_Sequence &lt;- annotation$SourceSeq &lt;- annotation$pos &lt;- annotation$chr &lt;- NULL
+        site.idx &lt;- dmrs$start.idx[dmr.idx]:dmrs$end.idx[dmr.idx]
+        annotation &lt;- annotation[site.idx,]
+        multi.idx &lt;- grep(&quot;UCSC_RefGene&quot;, colnames(annotation))
+        for (idx in multi.idx)
+            annotation[[idx]] &lt;- strsplit(annotation[[idx]], &quot;;&quot;)
+        n &lt;- sapply(annotation[[multi.idx[1]]], length)
+        annotation &lt;- c(lapply(annotation[multi.idx], unlist),
+                        lapply(annotation[-multi.idx], rep, n))
+        annotation &lt;- do.call(data.frame, c(annotation, list(stringsAsFactors=F)))
+        sapply(annotation, function(x) paste(setdiff(unique(x),&quot;&quot;), collapse=&quot;;&quot;))
+    })
+    dmrs.annot &lt;- do.call(rbind, dmrs.annot)
+
+    cbind(dmrs, dmrs.annot)
+}
+</code></pre>
+
+<p>We annotate the top 50 differentially methylated regions.</p>
+
+<pre><code class="r">dmrs50 &lt;- annotate.regions(dmrs50, stats, &quot;IlluminaHumanMethylation450kanno.ilmn12.hg19&quot;)
+</code></pre>
+
+<p>If we were using the more recent Illumina MethylationEPIC BeadChip,
+then we would use the <code>IlluminaHumanMethylationEPICanno.ilm10b2.hg19</code> package name instead.</p>
+
+<p>Here we can see the information added for the regions with
+Bonferonni adjusted p-values less than 0.05.</p>
+
+<pre><code class="r">kable(dmrs50[which(dmrs50$p.adjust &lt; 0.05),])
+</code></pre>
+
+<table><thead>
+<tr>
+<th align="left"></th>
+<th align="left">chr</th>
+<th align="right">start</th>
+<th align="right">end</th>
+<th align="right">n</th>
+<th align="right">start.idx</th>
+<th align="right">end.idx</th>
+<th align="right">start.orig</th>
+<th align="right">end.orig</th>
+<th align="right">z.orig</th>
+<th align="right">p.orig</th>
+<th align="right">B</th>
+<th align="right">S</th>
+<th align="right">estimate</th>
+<th align="right">se</th>
+<th align="right">z</th>
+<th align="right">p.value</th>
+<th align="right">p.adjust</th>
+<th align="left">UCSC_RefGene_Name</th>
+<th align="left">UCSC_RefGene_Accession</th>
+<th align="left">UCSC_RefGene_Group</th>
+<th align="left">strand</th>
+<th align="left">Random_Loci</th>
+<th align="left">Methyl27_Loci</th>
+<th align="left">Phantom</th>
+<th align="left">DMR</th>
+<th align="left">Enhancer</th>
+<th align="left">HMM_Island</th>
+<th align="left">Regulatory_Feature_Name</th>
+<th align="left">Regulatory_Feature_Group</th>
+<th align="left">DHS</th>
+</tr>
+</thead><tbody>
+<tr>
+<td align="left">2151</td>
+<td align="left">chr13</td>
+<td align="right">29148952</td>
+<td align="right">29149132</td>
+<td align="right">2</td>
+<td align="right">102277</td>
+<td align="right">102278</td>
+<td align="right">102277</td>
+<td align="right">102278</td>
+<td align="right">5.643680</td>
+<td align="right">0</td>
+<td align="right">0.0085360</td>
+<td align="right">0.0015125</td>
+<td align="right">0.0085360</td>
+<td align="right">0.0015125</td>
+<td align="right">5.643680</td>
+<td align="right">0</td>
+<td align="right">0.0070554</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">2454</td>
+<td align="left">chr4</td>
+<td align="right">6695614</td>
+<td align="right">6695698</td>
+<td align="right">2</td>
+<td align="right">271174</td>
+<td align="right">271175</td>
+<td align="right">271174</td>
+<td align="right">271175</td>
+<td align="right">5.502625</td>
+<td align="right">0</td>
+<td align="right">0.0104099</td>
+<td align="right">0.0018918</td>
+<td align="right">0.0104099</td>
+<td align="right">0.0018918</td>
+<td align="right">5.502625</td>
+<td align="right">0</td>
+<td align="right">0.0158602</td>
+<td align="left">S100P</td>
+<td align="left">NM_005980</td>
+<td align="left">1stExon;5&#39;UTR</td>
+<td align="left">-</td>
+<td align="left"></td>
+<td align="left">TRUE</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">2812</td>
+<td align="left">chr1</td>
+<td align="right">67519155</td>
+<td align="right">67519474</td>
+<td align="right">2</td>
+<td align="right">17843</td>
+<td align="right">17844</td>
+<td align="right">17843</td>
+<td align="right">17844</td>
+<td align="right">-5.493554</td>
+<td align="right">0</td>
+<td align="right">-0.0054861</td>
+<td align="right">0.0009986</td>
+<td align="right">-0.0054861</td>
+<td align="right">0.0009986</td>
+<td align="right">-5.493554</td>
+<td align="right">0</td>
+<td align="right">0.0166972</td>
+<td align="left">SLC35D1</td>
+<td align="left">NM_015139</td>
+<td align="left">Body</td>
+<td align="left">+</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">high-CpG:67292032-67292659</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">1:67291641-67292781</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">TRUE</td>
+</tr>
+</tbody></table>
+
+</body>
+
+</html>
