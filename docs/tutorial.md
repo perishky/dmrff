@@ -4,7 +4,11 @@ output:
   pdf_document: default
   word_document:
     highlight: tango  	
+  html_document:
+    toc: true
 ---
+
+# Identifying differentially methylated regions using dmrff
 
 ## Download and prepare and prepare an example DNA methylation dataset
 
