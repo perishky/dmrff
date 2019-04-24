@@ -29,12 +29,16 @@ dmrff.stats <- function(regions, estimate, se, methylation, chr, pos, verbose=T)
     members <- region.members(regions, data.frame(chr=chr, pos=pos))
 
     stats <- do.call(rbind, mclapply(members, function(idx) {
+        idx <- na.omit(idx)
+        if (length(idx) == 0) return(c(B=NA,S=NA))
         ivwfe.stats(estimate[idx], se[idx], methylation[idx,,drop=F])
     }))
+    
     regions$estimate <- stats[,"B"]
     regions$se <- stats[,"S"]
     regions$z <- stats[,"B"]/stats[,"S"]
     regions$p.value <- 2*pnorm(-abs(regions$z), lower.tail=T)
+    regions$n <- sapply(members, length)
     
     regions
 }
