@@ -13,7 +13,7 @@
 #' (Default: 0.05).
 #' @param maxgap Maximum distance between consecutive features (Default: 500bp).
 #' @param verbose If \code{TRUE} (default), then output status messages.
-#' @return A data frame listing all candidate bumps and their summary statistics.
+#' @return A data frame listing all candidate regions and their summary statistics.
 #' 
 #' @examples
 #'

@@ -150,3 +150,29 @@ dmr.ma.stats <- dmr.ma.stats[match(with(ret$dmrs, paste(chr, start, end)),
                                    with(dmr.ma.stats, paste(chr, start, end))),]
 stopifnot(diff(range(dmr.ma.stats$z - ret$dmrs$z)) < 1e-14)
 
+
+###################################################
+## test dmrff.cohort
+
+dmrs1 <- with(datasets[[1]], dmrff(estimate=ewas$estimate,
+                                   se=ewas$se,
+                                   p.value=ewas$p.value,
+                                   methylation=methylation,
+                                   chr=pre$chr,
+                                   pos=pre$pos))
+
+dmrs2 <- dmrff.cohort(datasets[[1]]$pre)
+
+## the exact set of candidates may not be exactly the same
+## because p-values were calculated from estimate/se in 'pre'
+dmrs1$id <- with(dmrs1, paste(chr, start, end))
+dmrs2$id <- with(dmrs2, paste(chr, start, end))
+common.candidates <- intersect(dmrs1$id, dmrs2$id)
+length(common.candidates) ## 51
+nrow(dmrs1) ## 51
+nrow(dmrs2) ## 52
+dmrs1 <- dmrs1[match(common.candidates, dmrs1$id),]
+dmrs2 <- dmrs2[match(common.candidates, dmrs2$id),]
+stopifnot(cor(dmrs1$estimate, dmrs2$estimate) >= 0.99)
+stopifnot(cor(dmrs1$se, dmrs2$se) >= 0.99)
+stopifnot(all((dmrs1$p.adjust < 0.05) == (dmrs2$p.adjust < 0.05)))

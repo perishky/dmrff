@@ -25,7 +25,7 @@ dmrff.candidates(estimate, p.value, chr, pos, maxgap = 500,
 \item{verbose}{If \code{TRUE} (default), then output status messages.}
 }
 \value{
-A data frame listing all candidate bumps.
+A data frame listing all candidate regions.
 }
 \description{
 Identify candidate differentially methylated regions from EWAS summary statistics.

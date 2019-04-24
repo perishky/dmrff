@@ -11,7 +11,7 @@
 #' (Default: 0.05).
 #' @param maxgap Maximum distance between consecutive features (Default: 500bp).
 #' @param verbose If \code{TRUE} (default), then output status messages.
-#' @return A data frame listing all candidate bumps.
+#' @return A data frame listing all candidate regions.
 #'
 #' @export
 dmrff.candidates <- function(estimate, p.value, chr, pos,
@@ -32,7 +32,7 @@ dmrff.candidates <- function(estimate, p.value, chr, pos,
     sig.idx <- which(p.value < p.cutoff)
     if (length(sig.idx) == 0) {
         if (verbose)
-            msg("No candidate bumps found")
+            msg("No candidate regions found")
         return(NULL)
     }
     
@@ -44,7 +44,7 @@ dmrff.candidates <- function(estimate, p.value, chr, pos,
                                   verbose = FALSE)
     
     if (verbose)
-        msg("Found ", nrow(candidates), " candidate bumps.")
+        msg("Found ", nrow(candidates), " candidate regions.")
     
     candidates$start.idx <- sig.idx[candidates$indexStart]
     candidates$end.idx <- sig.idx[candidates$indexEnd]

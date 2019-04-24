@@ -29,7 +29,7 @@ dmrff(estimate, se, p.value, methylation, chr, pos, maxgap = 500,
 \item{verbose}{If \code{TRUE} (default), then output status messages.}
 }
 \value{
-A data frame listing all candidate bumps and their summary statistics.
+A data frame listing all candidate regions and their summary statistics.
 }
 \description{
 Identifying differentially methylated regions efficiently with power and control.
@@ -44,6 +44,6 @@ dmrs <- dmrff(estimate, ## effect estimate for each CpG site
               pos)      ## position of each CpG site
                      
 dmrs[which(dmrs$p.adjust < 0.05),
-     c("chr","start","end","n", "z", "p.value","p.adjust")]
+     c("chr","start","end","n","B","S","z","p.value","p.adjust")]
 
 }

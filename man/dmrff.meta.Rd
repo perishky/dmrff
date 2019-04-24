@@ -18,7 +18,7 @@ for each participating EWAS.}
 \item{verbose}{If \code{TRUE} (default), then output status messages.}
 }
 \value{
-A data frame listing all candidate bumps and their summary statistics.
+A data frame listing all candidate regions and their summary statistics.
 }
 \description{
 Identify differentially methylated regions by meta-analysing multiple studies
