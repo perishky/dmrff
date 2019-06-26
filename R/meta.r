@@ -128,12 +128,14 @@ dmrff.cohort <- function(object, maxgap=500, p.cutoff=0.05, verbose=T) {
     stats <- shrink.candidates(candidates$start.idx, candidates$end.idx,
                                function(start.idx,end.idx) {
                                    idx <- start.idx:end.idx
+                                   if (length(idx) > ncol(object$rho)) return(0) 
                                    ivwfe.getz(object$estimate[idx], object$se[idx],
                                               rho=extract.rho(object$rho[idx,,drop=F]))
                                })
 
     full <- do.call(rbind, mclapply(1:nrow(stats), function(i) {
         idx <- stats$start.idx[i]:stats$end.idx[i]
+        if (length(idx) > ncol(object$rho)) return(c(B=0,S=1)) 
         ivwfe.stats(object$estimate[idx], object$se[idx],
                     rho=extract.rho(object$rho[idx,,drop=F]))
     }))
