@@ -23,3 +23,5 @@ false positive rates (e.g. comb-p) or suffer from low power (e.g. bumphunter).
 A [simple example](http://htmlpreview.github.io/?https://github.com/perishky/dmrff/blob/master/docs/tutorial.html)
 showing how to apply *dmrff* to a publicly available dataset can be found in the [docs](./docs) directory.
 
+A more extended example shows how to use *dmrff* to 
+[meta-analyze multiple datasets](http://htmlpreview.github.io/?https://github.com/perishky/dmrff/blob/master/docs/meta-analysis.html).
