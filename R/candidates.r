@@ -18,15 +18,23 @@ dmrff.candidates <- function(estimate, p.value, chr, pos,
                              maxgap=500, p.cutoff=0.05, verbose=T) {
     stopifnot(is.vector(estimate))
     stopifnot(is.vector(p.value))
+    stopifnot(is.vector(chr))
+    stopifnot(is.vector(pos))
     stopifnot(length(estimate) == length(p.value))
     stopifnot(length(estimate) == length(chr))
     stopifnot(length(estimate) == length(pos))
     
     if (is.na(p.cutoff) || !is.numeric(p.cutoff) || p.cutoff > 1 || p.cutoff < 0)
         stop("'p.cutoff' is a p-value cutoff so must be between 0 and 1")
-    
-    if (any(head(pos,-1) > tail(pos,-1) & head(chr,-1) == tail(chr,-1))) {
-        stop("'pos' must be in sorted order within chromosome")
+
+    # sort by chromosomal position
+    idx <- order(chr,pos)
+    sorted <- identical(idx, 1:length(idx))
+    if (!sorted) {
+        estimate <- estimate[idx]
+        p.value <- p.value[idx]
+        chr <- chr[idx]
+        pos <- pos[idx]
     }
     
     sig.idx <- which(p.value < p.cutoff)
@@ -50,5 +58,8 @@ dmrff.candidates <- function(estimate, p.value, chr, pos,
     candidates$end.idx <- sig.idx[candidates$indexEnd]
     candidates$candidate <- 1:nrow(candidates)
 
-    candidates[,c("chr","start","end","candidate","start.idx","end.idx")]   
+    if (sorted) 
+        candidates[,c("chr","start","end","candidate","start.idx","end.idx")]
+    else
+        candidates[,c("chr","start","end","candidate")]
 }

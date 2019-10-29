@@ -20,9 +20,6 @@ false positive rates (e.g. comb-p) or suffer from low power (e.g. bumphunter).
 - can be applied to the summary statistics of any EWAS
 - can be used in the context of meta-analysis
 
-A manuscript describing *dmrff* and evaluating its performance will
-appear soon on bioRxiv.
+A [simple example](http://htmlpreview.github.io/?https://github.com/perishky/dmrff/blob/master/docs/tutorial.html)
+showing how to apply *dmrff* to a publicly available dataset can be found in the [docs](./docs) directory.
 
-A [basic example](http://htmlpreview.github.io/?https://github.com/perishky/dmrff/blob/master/docs/tutorial.html) showing how to apply *dmrff* can be found in the [docs](./docs) directory.
-
-Other more cryptic examples can be found in the [tests](./tests) directory.

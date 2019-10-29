@@ -25,11 +25,11 @@ Identify differentially methylated regions by meta-analysing multiple studies
 using variance-weighted fixed effects meta-analysis.
 }
 \examples{
-pre1 <- dmrff.pre(est1, se1, p1, meth1, ...)
-pre2 <- dmrff.pre(est2, se2, p2, meth2, ...)
+pre1 <- dmrff.pre(est1, se1, meth1, ...)
+pre2 <- dmrff.pre(est2, se2, meth2, ...)
 ...
-pre9 <- dmrff.pre(est9, se9, p9, meth9, ...)
+pre9 <- dmrff.pre(est9, se9, meth9, ...)
 meta <- dmrff.meta(list(pre1, pre2, ..., pre9))
-meta$dmrs[which(meta$dmrs$p.adjust < 0.05), ]
+meta$dmrs[which(meta$dmrs$p.adjust < 0.05 & meta$dmrs$n > 1), ]
 
 }

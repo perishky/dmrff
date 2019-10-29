@@ -32,13 +32,30 @@ ivwfe.stats <- function(coef, se, mat=NULL, rho=NULL) {
         se <- se[!na]
         rho <- rho[!na,!na,drop=F]
     }
-    
-    omega <- (se%*%t(se))*rho
-    omega.inv <- solve(omega)
-    one <- matrix(1,nrow=nrow(omega.inv), ncol=1)
-    S2 <- 1/(t(one) %*% omega.inv %*% one)
-    c(B=S2 * (t(one) %*% omega.inv) %*% coef,
-      S=sqrt(S2))    
+
+    ivwfe.stats0 <- function(coef, se, rho) {
+        omega <- (se%*%t(se))*rho
+        omega.inv <- solve(omega)
+        one <- matrix(1,nrow=nrow(omega.inv), ncol=1)
+        S2 <- 1/(t(one) %*% omega.inv %*% one)
+        c(B=S2 * (t(one) %*% omega.inv) %*% coef,
+          S=sqrt(S2))
+    }
+
+    ## perform IVW with and without taking dependencies into account
+    basic <- ivwfe.stats0(coef, se, diag(1.05, nrow(rho), ncol(rho)))
+    withdeps <- ivwfe.stats0(coef, se, rho)
+    ## return the more conservative
+    z.basic <- abs(basic["B"]/basic["S"])
+    z.deps <- abs(abs(withdeps["B"]/withdeps["S"]))
+    if (is.nan(z.deps) | is.na(z.deps))
+        basic
+    else if (is.nan(z.basic) | is.na(z.basic))
+        withdeps
+    else if (z.basic < z.deps)
+        basic
+    else
+        withdeps
 }
 
 ivwfe.getz <- function(coef, se, mat=NULL, rho=NULL) {

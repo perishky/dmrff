@@ -1,3 +1,11 @@
+## Code in this file from:
+## 
+## Jaffe AE, Murakami P, Lee H, Leek JT, Fallin DM, Feinberg AP, Irizarry
+## RA (2012). Bump hunting to identify differentially methylated regions
+## in epigenetic epidemiology studies. International journal of
+## epidemiology, 41(1), 200?209. doi: 10.1093/ije/dyr238.
+##
+## https://github.com/rafalab/bumphunter
 
 greaterOrEqual <- function (x, y) {
     precision <- sqrt(.Machine$double.eps)

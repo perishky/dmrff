@@ -3,76 +3,37 @@ title: "Identifying differentially methylated regions using dmrff"
 output:
   pdf_document: default
   word_document:
-    highlight: tango  	
+    highlight: tango
   html_document:
     toc: true
 ---
 
 # Identifying differentially methylated regions using dmrff
 
-## Download and prepare and prepare an example DNA methylation dataset
+## Download and prepare an example DNA methylation dataset
 
 We'll use a small cord blood DNA methylation dataset
-available on GEO: [GSE69633](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE69633).
+available on GEO: [GSE79056](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE79056).
 
-Download data files:
-
-```r
-geo.url <- "ftp://ftp.ncbi.nlm.nih.gov/geo/series"
-series.file <- file.path(geo.url, "GSE69nnn/GSE69633/matrix/GSE69633_series_matrix.txt.gz")
-if (!file.exists(basename(series.file)))
-  download.file(series.file, destfile=basename(series.file))
-data.file <- file.path(geo.url, "GSE69nnn/GSE69633/suppl/GSE69633_processed_betas_UCB_HM450K.txt.gz")
-if (!file.exists(basename(data.file)))
-  download.file(data.file, destfile=basename(data.file))
-```
-
-Retrieve sample information:
 
 ```r
-samples <- readLines(gzfile(basename(series.file)))
-start <- grep("Sample_title", samples)
-end <- grep("series_matrix_table_begin", samples)-1
-samples <- read.table(textConnection(samples[start:end]), sep="\t", header=F)
+library(geograbi) ## https://github.com/yousefi138
 ```
 
 ```r
-samples <- t(samples)
-colnames(samples) <- sub("!Sample_", "", samples[1,])
-samples <- as.data.frame(samples[-1,], stringsAsFactors=F)
-samples$id <- sub("^[^(]+\\((.*)\\)$", "\\1", samples$title)
+samples <- geograbi.get.samples("GSE79056")
 ```
 
-Format sample characteristics:
-
 ```r
-idx <- which(colnames(samples) == "characteristics_ch1")
-characteristics <- samples[,idx]
-colnames(characteristics) <- sub("([^:]+):.*", "\\1", characteristics[1,])
-rownames(characteristics) <- samples$geo_accession
-characteristics <- apply(characteristics, 2, function(x) sub("[^:]+: (.*)", "\\1", x))
-characteristics <- as.data.frame(characteristics, stringsAsFactors=F)
-for (name in c("socioeconomic score", "gestational age", "birth weight", "pbconc (ng/dl)"))
-    characteristics[[name]] <- as.numeric(characteristics[[name]])
-colnames(characteristics) <- sub(" ", ".", colnames(characteristics))
-colnames(characteristics)[grep("pbconc", colnames(characteristics))] <- "pbconc"
+vars <- geograbi.extract.characteristics(samples)
+methylation <- geograbi.get.data("GSE79056") ## 86Mb
 ```
 
-Load DNA methylation data.
+We'll be investigating associations with gestational age.
 
 ```r
-meth <- read.table(gzfile(basename(data.file)), header=T)
-meth <- meth[,-grep("Detection.Pval", colnames(meth))]
-meth <- as.matrix(meth)
-```
-
-Match between samples in `samples`, `characteristics` and `meth`.
-
-```r
-idx <- match(colnames(meth), paste0("X", sub("-", ".", samples$id)))
-samples <- samples[idx,]
-characteristics <- characteristics[idx,]
-colnames(meth) <- rownames(characteristics)
+colnames(vars)[which(colnames(vars) == "ga weeks")] <- "ga"
+vars$ga <- as.numeric(vars$ga)
 ```
 
 ## Test DNA methylation associations 
@@ -80,20 +41,24 @@ colnames(meth) <- rownames(characteristics)
 Prepare surrogate variables to handle unknown confounding.
 
 ```r
-library(sva)
+library(sva, quietly=T)
 ```
 
 ```r
-mod <- model.matrix(~ gender + socioeconomic.score + gestational.age + smoke.ever + birth.weight + pbconc, characteristics)
+## construct EWAS model
+mod <- model.matrix(~ gender + ga, vars)
+## construct null model
 mod0 <- mod[,1]
-set.seed(20190410)
-random.idx <- sample(1:nrow(meth), 5000)
-sva.fit <- sva(meth[random.idx,], mod=mod, mod0=mod0)
-```
-
-```
-## Number of significant surrogate variables is:  13 
-## Iteration (out of 5 ):1  2  3  4  5
+## to save time, SVA will be applied to a random selection of 5000 CpG sites
+set.seed(20191029)
+random.idx <- sample(1:nrow(methylation), 5000)
+methylation.sva <- methylation[random.idx,]
+## missing methylation values are replaced with mean values
+methylation.mean <- rowMeans(methylation.sva, na.rm=T)
+idx <- which(is.na(methylation.sva), arr.ind=T)
+if (nrow(idx) > 0)
+    methylation.sva[idx] <- methylation.mean[idx[,"row"]]
+sva.fit <- sva(methylation.sva, mod=mod, mod0=mod0)
 ```
 
 Add surrogate variables to the model.
@@ -106,16 +71,16 @@ Test the associations using `limma`.
 
 ```r
 library(limma)
-fit <- lmFit(meth, design)
+fit <- lmFit(methylation, design)
 fit <- eBayes(fit)
 ```
 
 Save the summary statistics for gestational age.
 
 ```r
-stats <- data.frame(estimate=fit$coefficients[,"gestational.age"],
-                    se=sqrt(fit$s2.post) * fit$stdev.unscaled[,"gestational.age"],
-                    p.value=fit$p.value[,"gestational.age"])
+stats <- data.frame(estimate=fit$coefficients[,"ga"],
+                    se=sqrt(fit$s2.post) * fit$stdev.unscaled[,"ga"],
+                    p.value=fit$p.value[,"ga"])
 ```
 
 ## Add genomic coordinates for CpG sites (Illumina Beadchips)
@@ -132,11 +97,14 @@ For the Illumina 450K microaray, we use the
 
 
 ```r
-if (!require(IlluminaHumanMethylation450kanno.ilmn12.hg19)) {
+if (!require(IlluminaHumanMethylation450kanno.ilmn12.hg19, quietly=T)) {
     install.packages("BiocManager")
     BiocManager::install("IlluminaHumanMethylation450kanno.ilmn12.hg19")
-    library(IlluminaHumanMethylation450kanno.ilmn12.hg19)
 }
+```
+
+```r
+library(IlluminaHumanMethylation450kanno.ilmn12.hg19)
 ```
 
 If we were using the more recent Illumina MethylationEPIC BeadChip,
@@ -157,21 +125,25 @@ are the Illumina CpG site identifiers, e.g. cg05775921).
 
 
 ```r
-annotation <- annotation[match(rownames(stats), rownames(annotation)),]
+common <- intersect(rownames(methylation), rownames(annotation))
+annotation <- annotation[match(common, rownames(annotation)),]
+stats <- stats[match(common, rownames(stats)),]
+methylation <- methylation[match(common, rownames(methylation)),]
+
 stats <- cbind(stats, annotation)
 ```
 
 ## Apply `dmrff` to summary statistics
 
-If `dmrff` is not already installed, we install it and load it.
+If `dmrff` is not already installed, we install it and then load it:
 
 
 ```r
-if (!require(dmrff)) {
+if (!require(dmrff, quietly=T)) {
     library(devtools)
     install_github("perishky/dmrff")
-    library(dmrff)
 }
+library(dmrff)
 ```
 
 Below we assume that you have already performed an epigenome-wide association analysis
@@ -183,18 +155,10 @@ which has the following columns:
 - `chr` (chromosome of the CpG site),
 - `pos` (position of the CpG site on the chromosome).
 
-We also assume that you have loaded your DNA methylation dataset in R as matrix `meth`
+We also assume that you have loaded your DNA methylation dataset in R as matrix `methylation`
 for which rows correspond to CpG sites and columns to samples.
 The DNA methylation levels are necessary for `dmrff` to calculate
 and adjust for dependencies between CpG sites.
-
-Before running `dmrff`, ensure that the dataset is ordered by CpG site genomic position.
-
-```r
-idx <- order(stats$chr, stats$pos)
-stats <- stats[idx,]
-meth <- meth[idx,]
-```
 
 `dmrff` can then be applied as follows.
 
@@ -202,7 +166,7 @@ meth <- meth[idx,]
 dmrs <- dmrff(estimate=stats$estimate,
               se=stats$se,
               p.value=stats$p.value,
-              methylation=meth,
+              methylation=methylation,
               chr=stats$chr,
               pos=stats$pos,
               maxgap=500,
@@ -210,7 +174,7 @@ dmrs <- dmrff(estimate=stats$estimate,
 ```
 
 ```
-## [dmrff.candidates] Wed Apr 10 12:11:26 2019 Found  27414  candidate bumps.
+## [dmrff.candidates] Tue Oct 29 17:01:56 2019 Found  41834  candidate regions.
 ```
 
 The algorithm will then identify differentially methylated regions by:
@@ -223,147 +187,100 @@ The algorithm will then identify differentially methylated regions by:
 Our output `dmrs` is a data frame listing all genomic regions tested
 along with summary statistics for each.
 
-For example, the first 10 regions might look like the following:
+We just keep regions with > 1 CpG site and Bonferroni adjusted p < 0.05.
+
+```r
+dmrs <- dmrs[which(dmrs$p.adjust < 0.05 & dmrs$n > 1),]
+```
+There are 440 such DMRs.
+
+Here are the first 10 regions:
 
 
 ```r
-kable(dmrs[1:10,c("chr","start","end","n","estimate","se","z","p.value","p.adjust")])
+kable(dmrs[1:10,])
 ```
 
 
 
-|chr  |    start|      end|  n|   estimate|        se|          z|   p.value| p.adjust|
-|:----|--------:|--------:|--:|----------:|---------:|----------:|---------:|--------:|
-|chr6 | 31744831| 31744927|  3| -0.0052637| 0.0011350| -4.6378024| 0.0000035|        1|
-|chr6 | 31744636| 31744636|  1| -0.0132362| 0.0037004| -3.5769566| 0.0003476|        1|
-|chr6 | 31744612| 31744612|  1| -0.0150106| 0.0044921| -3.3415449| 0.0008331|        1|
-|chr6 | 31744391| 31744391|  1| -0.0098522| 0.0029805| -3.3055030| 0.0009481|        1|
-|chr6 | 31743769| 31743952|  5| -0.0028035| 0.0009087| -3.0852055| 0.0020341|        1|
-|chr6 | 31744037| 31744339|  3| -0.0016838| 0.0013148| -1.2806828| 0.2003051|        1|
-|chr6 | 31744033| 31744033|  1| -0.0006374| 0.0009404| -0.6777688| 0.4979183|        1|
-|chr6 | 31743986| 31743986|  1|  0.0000130| 0.0010535|  0.0122943| 0.9901908|        1|
-|chr6 | 31744398| 31744524|  2| -0.0038149| 0.0015648| -2.4378715| 0.0147740|        1|
-|chr6 | 31744545| 31744545|  1| -0.0123068| 0.0051349| -2.3966699| 0.0165448|        1|
+|    |chr   |    start|      end|  n|          B|         S|   estimate|        se|         z| p.value|  p.adjust|
+|:---|:-----|--------:|--------:|--:|----------:|---------:|----------:|---------:|---------:|-------:|---------:|
+|1   |chr6  | 32120584| 32120878|  6|  0.0133915| 0.0014515|  0.0133915| 0.0014515|  9.225734|       0| 0.0000000|
+|2   |chr6  | 32119944| 32120203|  3|  0.0047073| 0.0006831|  0.0047073| 0.0006831|  6.891180|       0| 0.0000021|
+|4   |chr6  | 32121143| 32121156|  2|  0.0089995| 0.0012446|  0.0089995| 0.0012446|  7.230775|       0| 0.0000002|
+|21  |chr6  | 32013699| 32017224| 47| -0.0004568| 0.0000769| -0.0004568| 0.0000769| -5.943456|       0| 0.0010452|
+|23  |chr6  | 33245488| 33245537|  3| -0.0065765| 0.0007459| -0.0065765| 0.0007459| -8.816650|       0| 0.0000000|
+|28  |chr6  | 33245893| 33246094|  5| -0.0038212| 0.0005975| -0.0038212| 0.0005975| -6.395753|       0| 0.0000598|
+|46  |chr11 | 14994230| 14994561|  4|  0.0052970| 0.0008988|  0.0052970| 0.0008988|  5.893703|       0| 0.0014143|
+|76  |chr6  | 32117292| 32117377|  2|  0.0030610| 0.0005236|  0.0030610| 0.0005236|  5.846178|       0| 0.0018838|
+|98  |chr6  | 30653191| 30653242|  2| -0.0032880| 0.0004738| -0.0032880| 0.0004738| -6.940174|       0| 0.0000015|
+|103 |chr6  | 30653407| 30653732|  4| -0.0033657| 0.0006041| -0.0033657| 0.0006041| -5.571241|       0| 0.0094726|
 
-Some regions contain only one CpG site.
-EWAS is just fine for identifying associations with single CpG sites,
-so we might just remove these regions from the output.
+We can also list the information for each CpG site in these regions.
 
 
 ```r
-dmrs <- dmrs[which(dmrs$n > 1),]
+sites <- dmrff.sites(dmrs, stats$chr, stats$pos)
+sites <- cbind(sites, stats[sites$site, c("UCSC_RefGene_Name", "estimate", "p.value")])
+sites <- cbind(sites, dmr=dmrs[sites$region,c("start","end","z","p.adjust")])
 ```
 
-1769 regions with at least 2 CpG sites were tested.
-
-All genomic regions with p-value < 0.05 (Bonferroni adjusted for multiple tests)
-can be listed as follows:
-
+Here are the sites in the largest DMR:
 
 ```r
-kable(dmrs[which(dmrs$p.adjust < 0.05),
-           c("chr","start","end","n","estimate","se","z","p.value","p.adjust")])
+max.region <- which.max(dmrs$n)
+kable(sites[which(sites$region == max.region),],row.names=F)
 ```
 
 
 
-|     |chr   |    start|      end|  n|   estimate|        se|         z| p.value|  p.adjust|
-|:----|:-----|--------:|--------:|--:|----------:|---------:|---------:|-------:|---------:|
-|2151 |chr13 | 29148952| 29149132|  2|  0.0085360| 0.0015125|  5.643680|       0| 0.0070554|
-|2454 |chr4  |  6695614|  6695698|  2|  0.0104099| 0.0018918|  5.502625|       0| 0.0158602|
-|2812 |chr1  | 67519155| 67519474|  2| -0.0054861| 0.0009986| -5.493554|       0| 0.0166972|
+| region|   site|chr  |      pos|UCSC_RefGene_Name |   estimate|   p.value| dmr.start|  dmr.end|     dmr.z| dmr.p.adjust|
+|------:|------:|:----|--------:|:-----------------|----------:|---------:|---------:|--------:|---------:|------------:|
+|      4| 206488|chr6 | 32013699|TNXB;TNXB;TNXB    |  0.0033248| 0.0013753|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 259872|chr6 | 32013710|TNXB;TNXB;TNXB    |  0.0039750| 0.0001142|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 253108|chr6 | 32013974|TNXB;TNXB         |  0.0007077| 0.1580097|  32013699| 32017224| -5.943456|    0.0010452|
+|      4|  76731|chr6 | 32014003|TNXB;TNXB         |  0.0014911| 0.0152387|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 132640|chr6 | 32014148|TNXB;TNXB         |  0.0016923| 0.0819380|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 300117|chr6 | 32014189|TNXB;TNXB         |  0.0020784| 0.0073160|  32013699| 32017224| -5.943456|    0.0010452|
+|      4|  83714|chr6 | 32014300|TNXB;TNXB         |  0.0016903| 0.0294514|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 246136|chr6 | 32014476|TNXB;TNXB         |  0.0013224| 0.5403594|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 271379|chr6 | 32014484|TNXB;TNXB         |  0.0007101| 0.5998312|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 145379|chr6 | 32014510|TNXB;TNXB         |  0.0016457| 0.2082371|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 174594|chr6 | 32014605|TNXB;TNXB         | -0.0001531| 0.8101197|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 180049|chr6 | 32014663|TNXB;TNXB         |  0.0029876| 0.0015277|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 172312|chr6 | 32014674|TNXB;TNXB         |  0.0009082| 0.3807045|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 144588|chr6 | 32014893|TNXB;TNXB         |  0.0021443| 0.0006677|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 254656|chr6 | 32014926|TNXB;TNXB         |  0.0007943| 0.0784213|  32013699| 32017224| -5.943456|    0.0010452|
+|      4|  96182|chr6 | 32015083|TNXB;TNXB         |  0.0012410| 0.1573622|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 251549|chr6 | 32015175|TNXB;TNXB         |  0.0004095| 0.4306034|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 228450|chr6 | 32015215|TNXB;TNXB         |  0.0004607| 0.3710192|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 214234|chr6 | 32015297|TNXB;TNXB         |  0.0030980| 0.0001455|  32013699| 32017224| -5.943456|    0.0010452|
+|      4|  53331|chr6 | 32015618|TNXB              |  0.0001046| 0.8517118|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 190142|chr6 | 32015688|TNXB              |  0.0010612| 0.0066559|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 141947|chr6 | 32015713|TNXB              |  0.0014876| 0.0432615|  32013699| 32017224| -5.943456|    0.0010452|
+|      4|  98162|chr6 | 32015737|TNXB              |  0.0013062| 0.0218474|  32013699| 32017224| -5.943456|    0.0010452|
+|      4|  46174|chr6 | 32015773|TNXB              |  0.0021020| 0.0396521|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 253689|chr6 | 32016070|TNXB              |  0.0004271| 0.4273317|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 289210|chr6 | 32016100|TNXB              |  0.0001844| 0.5002354|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 288177|chr6 | 32016115|TNXB              | -0.0002369| 0.4819618|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 312500|chr6 | 32016172|TNXB              |  0.0004049| 0.5155801|  32013699| 32017224| -5.943456|    0.0010452|
+|      4|  49395|chr6 | 32016214|TNXB              |  0.0016431| 0.0583541|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 215071|chr6 | 32016239|TNXB              |  0.0025661| 0.1157791|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 166791|chr6 | 32016247|TNXB              |  0.0019620| 0.0495010|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 108179|chr6 | 32016257|TNXB              |  0.0024417| 0.0048269|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 291014|chr6 | 32016288|TNXB              |  0.0033794| 0.0000426|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 243825|chr6 | 32016290|TNXB              |  0.0019575| 0.0083271|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 104944|chr6 | 32016360|TNXB              |  0.0000404| 0.9559929|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 180966|chr6 | 32016368|TNXB              |  0.0012041| 0.2480942|  32013699| 32017224| -5.943456|    0.0010452|
+|      4|  85924|chr6 | 32016426|TNXB              |  0.0021802| 0.0132794|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 198624|chr6 | 32016473|TNXB              |  0.0009756| 0.0614283|  32013699| 32017224| -5.943456|    0.0010452|
+|      4|  15233|chr6 | 32016520|TNXB              |  0.0002999| 0.5368667|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 283755|chr6 | 32016535|TNXB              | -0.0005487| 0.4551498|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 155224|chr6 | 32016678|TNXB              |  0.0003520| 0.5391198|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 216005|chr6 | 32016690|TNXB              | -0.0002819| 0.6021935|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 237173|chr6 | 32016803|TNXB              |  0.0015205| 0.0448445|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 296767|chr6 | 32017024|TNXB              |  0.0015014| 0.1116998|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 204967|chr6 | 32017079|TNXB              |  0.0010082| 0.0341457|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 290092|chr6 | 32017089|TNXB              |  0.0009824| 0.0197532|  32013699| 32017224| -5.943456|    0.0010452|
+|      4| 233696|chr6 | 32017224|TNXB              |  0.0006594| 0.2466544|  32013699| 32017224| -5.943456|    0.0010452|
 
-We can also list the statistics for each CpG site in these regions.
-
-
-```r
-sites.idx <- sapply(which(dmrs$p.adjust < 0.05),
-                    function(dmr.idx) dmrs$start.idx[dmr.idx]:dmrs$end.idx[dmr.idx])
-sites.idx <- unlist(sites.idx)
-kable(stats[sites.idx, c("chr","pos","UCSC_RefGene_Name","estimate","se","p.value")])
-```
-
-
-
-|           |chr   |      pos|UCSC_RefGene_Name |   estimate|        se|   p.value|
-|:----------|:-----|--------:|:-----------------|----------:|---------:|---------:|
-|cg15887927 |chr13 | 29148952|                  |  0.0062306| 0.0022104| 0.0087764|
-|cg24561305 |chr13 | 29149132|                  |  0.0111855| 0.0023987| 0.0000706|
-|cg26233331 |chr4  |  6695614|S100P;S100P       |  0.0092628| 0.0019054| 0.0000411|
-|cg22266967 |chr4  |  6695698|S100P             |  0.0065167| 0.0024427| 0.0125828|
-|cg01802975 |chr1  | 67519155|SLC35D1           | -0.0054169| 0.0010328| 0.0000144|
-|cg17930550 |chr1  | 67519474|SLC35D1           | -0.0059922| 0.0026819| 0.0336787|
-
-## Annotating differentially methylated regions (Illumina Beadchips)
-
-Using the CpG site annotations described earlier, we can also
-annotate differentially methylated regions.
-
-To save time, we will only annotate the top 50 differentially methylated regions.
-
-```r
-dmrs50 <- dmrs[order(dmrs$p.value)[1:50],]
-```
-
-For annotation, we will use the following function.
-
-```r
-annotate.regions <- function(dmrs, stats, package) {
-    if (!require(package, character.only=T)) {
-        install.packages("BiocManager")
-        BiocManager::install(package)
-        library(package, character.only=T)
-    }    
-    data(list=package)
-    data(Locations)
-    data(Other)
-    annotation <- cbind(as.data.frame(Locations), as.data.frame(Other))
-
-    stopifnot(all(rownames(stats) %in% rownames(annotation)))
-    
-    annotation <- annotation[match(rownames(stats), rownames(annotation)),]
-    stats <- cbind(stats, annotation)
-    
-    dmrs.annot <- lapply(1:nrow(dmrs), function(dmr.idx) {
-        annotation$Forward_Sequence <- annotation$SourceSeq <- annotation$pos <- annotation$chr <- NULL
-        site.idx <- dmrs$start.idx[dmr.idx]:dmrs$end.idx[dmr.idx]
-        annotation <- annotation[site.idx,]
-        multi.idx <- grep("UCSC_RefGene", colnames(annotation))
-        for (idx in multi.idx)
-            annotation[[idx]] <- strsplit(annotation[[idx]], ";")
-        n <- sapply(annotation[[multi.idx[1]]], length)
-        annotation <- c(lapply(annotation[multi.idx], unlist),
-                        lapply(annotation[-multi.idx], rep, n))
-        annotation <- do.call(data.frame, c(annotation, list(stringsAsFactors=F)))
-        sapply(annotation, function(x) paste(setdiff(unique(x),""), collapse=";"))
-    })
-    dmrs.annot <- do.call(rbind, dmrs.annot)
-
-    cbind(dmrs, dmrs.annot)
-}
-```
-
-We annotate the top 50 differentially methylated regions.
-
-```r
-dmrs50 <- annotate.regions(dmrs50, stats, "IlluminaHumanMethylation450kanno.ilmn12.hg19")
-```
-
-If we were using the more recent Illumina MethylationEPIC BeadChip,
-then we would use the `IlluminaHumanMethylationEPICanno.ilm10b2.hg19` package name instead.
-
-
-Here we can see the information added for the regions with
-Bonferonni adjusted p-values less than 0.05.
-
-```r
-kable(dmrs50[which(dmrs50$p.adjust < 0.05),])
-```
-
-
-
-|     |chr   |    start|      end|  n| start.idx| end.idx| start.orig| end.orig|    z.orig| p.orig|          B|         S|   estimate|        se|         z| p.value|  p.adjust|UCSC_RefGene_Name |UCSC_RefGene_Accession |UCSC_RefGene_Group |strand |Random_Loci |Methyl27_Loci |Phantom                    |DMR |Enhancer |HMM_Island          |Regulatory_Feature_Name |Regulatory_Feature_Group |DHS  |
-|:----|:-----|--------:|--------:|--:|---------:|-------:|----------:|--------:|---------:|------:|----------:|---------:|----------:|---------:|---------:|-------:|---------:|:-----------------|:----------------------|:------------------|:------|:-----------|:-------------|:--------------------------|:---|:--------|:-------------------|:-----------------------|:------------------------|:----|
-|2151 |chr13 | 29148952| 29149132|  2|    102277|  102278|     102277|   102278|  5.643680|      0|  0.0085360| 0.0015125|  0.0085360| 0.0015125|  5.643680|       0| 0.0070554|                  |                       |                   |       |            |              |                           |    |         |                    |                        |                         |     |
-|2454 |chr4  |  6695614|  6695698|  2|    271174|  271175|     271174|   271175|  5.502625|      0|  0.0104099| 0.0018918|  0.0104099| 0.0018918|  5.502625|       0| 0.0158602|S100P             |NM_005980              |1stExon;5'UTR      |-      |            |TRUE          |                           |    |         |                    |                        |                         |     |
-|2812 |chr1  | 67519155| 67519474|  2|     17843|   17844|      17843|    17844| -5.493554|      0| -0.0054861| 0.0009986| -0.0054861| 0.0009986| -5.493554|       0| 0.0166972|SLC35D1           |NM_015139              |Body               |+      |            |              |high-CpG:67292032-67292659 |    |         |1:67291641-67292781 |                        |                         |TRUE |

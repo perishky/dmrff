@@ -1,4 +1,7 @@
-all: tutorial.html tutorial.docx
+## tutorial.html takes about 3 minutes
+## meta-analysis.html takes about 20 minutes
+
+all: tutorial.html meta-analysis.html 
 
 %.docx: %.md
 	Rscript --vanilla build-docx.r $< $@

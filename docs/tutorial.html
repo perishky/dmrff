@@ -57,9 +57,6 @@ var hljs=new function(){function m(p){return p.replace(/&/gm,"&amp;").replace(/<
 hljs.initHighlightingOnLoad();
 </script>
 
-<!-- MathJax scripts -->
-<script type="text/javascript" src="https://cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML">
-</script>
 
 
 <style type="text/css">
@@ -121,11 +118,10 @@ pre code {
 code {
   font-size: 92%;
   border: 1px solid #ccc;
-  background-color: #E8E8D8;
 }
 
 code[class] {
-  background-color: #E8E8D8;
+  background-color: #F8F8F8;
 }
 
 table, td, th {
@@ -142,9 +138,9 @@ blockquote {
 hr {
    height: 0px;
    border-bottom: none;
-   border-top-width: thick;
-   border-top-style: solid;
-   border-top-color: #888888;
+   border-top-width: thin;
+   border-top-style: dotted;
+   border-top-color: #999999;
 }
 
 @media print {
@@ -205,110 +201,50 @@ hr {
 </head>
 
 <body>
-<div id="toc">
-<div id="toc_header">Table of Contents</div>
-<ul>
-<li>
-<a href="#toc_0">Identifying differentially methylated regions using dmrff</a>
-<ul>
-<li>
-<a href="#toc_1">Download and prepare and prepare an example DNA methylation dataset</a>
-</li>
-<li>
-<a href="#toc_2">Test DNA methylation associations</a>
-</li>
-<li>
-<a href="#toc_3">Add genomic coordinates for CpG sites (Illumina Beadchips)</a>
-</li>
-<li>
-<a href="#toc_4">Apply &lt;code&gt;dmrff&lt;/code&gt; to summary statistics</a>
-</li>
-<li>
-<a href="#toc_5">Annotating differentially methylated regions (Illumina Beadchips)</a>
-</li>
-</ul>
-</li>
-</ul>
-</div>
+<h1>Identifying differentially methylated regions using dmrff</h1>
 
-
-<h1 id="toc_0">Identifying differentially methylated regions using dmrff</h1>
-
-<h2 id="toc_1">Download and prepare and prepare an example DNA methylation dataset</h2>
+<h2>Download and prepare an example DNA methylation dataset</h2>
 
 <p>We&#39;ll use a small cord blood DNA methylation dataset
-available on GEO: <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE69633">GSE69633</a>.</p>
+available on GEO: <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE79056">GSE79056</a>.</p>
 
-<p>Download data files:</p>
-
-<pre><code class="r">geo.url &lt;- &quot;ftp://ftp.ncbi.nlm.nih.gov/geo/series&quot;
-series.file &lt;- file.path(geo.url, &quot;GSE69nnn/GSE69633/matrix/GSE69633_series_matrix.txt.gz&quot;)
-if (!file.exists(basename(series.file)))
-  download.file(series.file, destfile=basename(series.file))
-data.file &lt;- file.path(geo.url, &quot;GSE69nnn/GSE69633/suppl/GSE69633_processed_betas_UCB_HM450K.txt.gz&quot;)
-if (!file.exists(basename(data.file)))
-  download.file(data.file, destfile=basename(data.file))
+<pre><code class="r">library(geograbi) ## https://github.com/yousefi138
 </code></pre>
 
-<p>Retrieve sample information:</p>
-
-<pre><code class="r">samples &lt;- readLines(gzfile(basename(series.file)))
-start &lt;- grep(&quot;Sample_title&quot;, samples)
-end &lt;- grep(&quot;series_matrix_table_begin&quot;, samples)-1
-samples &lt;- read.table(textConnection(samples[start:end]), sep=&quot;\t&quot;, header=F)
+<pre><code class="r">samples &lt;- geograbi.get.samples(&quot;GSE79056&quot;)
 </code></pre>
 
-<pre><code class="r">samples &lt;- t(samples)
-colnames(samples) &lt;- sub(&quot;!Sample_&quot;, &quot;&quot;, samples[1,])
-samples &lt;- as.data.frame(samples[-1,], stringsAsFactors=F)
-samples$id &lt;- sub(&quot;^[^(]+\\((.*)\\)$&quot;, &quot;\\1&quot;, samples$title)
+<pre><code class="r">vars &lt;- geograbi.extract.characteristics(samples)
+methylation &lt;- geograbi.get.data(&quot;GSE79056&quot;) ## 86Mb
 </code></pre>
 
-<p>Format sample characteristics:</p>
+<p>We&#39;ll be investigating associations with gestational age.</p>
 
-<pre><code class="r">idx &lt;- which(colnames(samples) == &quot;characteristics_ch1&quot;)
-characteristics &lt;- samples[,idx]
-colnames(characteristics) &lt;- sub(&quot;([^:]+):.*&quot;, &quot;\\1&quot;, characteristics[1,])
-rownames(characteristics) &lt;- samples$geo_accession
-characteristics &lt;- apply(characteristics, 2, function(x) sub(&quot;[^:]+: (.*)&quot;, &quot;\\1&quot;, x))
-characteristics &lt;- as.data.frame(characteristics, stringsAsFactors=F)
-for (name in c(&quot;socioeconomic score&quot;, &quot;gestational age&quot;, &quot;birth weight&quot;, &quot;pbconc (ng/dl)&quot;))
-    characteristics[[name]] &lt;- as.numeric(characteristics[[name]])
-colnames(characteristics) &lt;- sub(&quot; &quot;, &quot;.&quot;, colnames(characteristics))
-colnames(characteristics)[grep(&quot;pbconc&quot;, colnames(characteristics))] &lt;- &quot;pbconc&quot;
+<pre><code class="r">colnames(vars)[which(colnames(vars) == &quot;ga weeks&quot;)] &lt;- &quot;ga&quot;
+vars$ga &lt;- as.numeric(vars$ga)
 </code></pre>
 
-<p>Load DNA methylation data.</p>
-
-<pre><code class="r">meth &lt;- read.table(gzfile(basename(data.file)), header=T)
-meth &lt;- meth[,-grep(&quot;Detection.Pval&quot;, colnames(meth))]
-meth &lt;- as.matrix(meth)
-</code></pre>
-
-<p>Match between samples in <code>samples</code>, <code>characteristics</code> and <code>meth</code>.</p>
-
-<pre><code class="r">idx &lt;- match(colnames(meth), paste0(&quot;X&quot;, sub(&quot;-&quot;, &quot;.&quot;, samples$id)))
-samples &lt;- samples[idx,]
-characteristics &lt;- characteristics[idx,]
-colnames(meth) &lt;- rownames(characteristics)
-</code></pre>
-
-<h2 id="toc_2">Test DNA methylation associations</h2>
+<h2>Test DNA methylation associations</h2>
 
 <p>Prepare surrogate variables to handle unknown confounding.</p>
 
-<pre><code class="r">library(sva)
+<pre><code class="r">library(sva, quietly=T)
 </code></pre>
 
-<pre><code class="r">mod &lt;- model.matrix(~ gender + socioeconomic.score + gestational.age + smoke.ever + birth.weight + pbconc, characteristics)
+<pre><code class="r">## construct EWAS model
+mod &lt;- model.matrix(~ gender + ga, vars)
+## construct null model
 mod0 &lt;- mod[,1]
-set.seed(20190410)
-random.idx &lt;- sample(1:nrow(meth), 5000)
-sva.fit &lt;- sva(meth[random.idx,], mod=mod, mod0=mod0)
-</code></pre>
-
-<pre><code>## Number of significant surrogate variables is:  13 
-## Iteration (out of 5 ):1  2  3  4  5
+## to save time, SVA will be applied to a random selection of 5000 CpG sites
+set.seed(20191029)
+random.idx &lt;- sample(1:nrow(methylation), 5000)
+methylation.sva &lt;- methylation[random.idx,]
+## missing methylation values are replaced with mean values
+methylation.mean &lt;- rowMeans(methylation.sva, na.rm=T)
+idx &lt;- which(is.na(methylation.sva), arr.ind=T)
+if (nrow(idx) &gt; 0)
+    methylation.sva[idx] &lt;- methylation.mean[idx[,&quot;row&quot;]]
+sva.fit &lt;- sva(methylation.sva, mod=mod, mod0=mod0)
 </code></pre>
 
 <p>Add surrogate variables to the model.</p>
@@ -319,18 +255,18 @@ sva.fit &lt;- sva(meth[random.idx,], mod=mod, mod0=mod0)
 <p>Test the associations using <code>limma</code>. </p>
 
 <pre><code class="r">library(limma)
-fit &lt;- lmFit(meth, design)
+fit &lt;- lmFit(methylation, design)
 fit &lt;- eBayes(fit)
 </code></pre>
 
 <p>Save the summary statistics for gestational age.</p>
 
-<pre><code class="r">stats &lt;- data.frame(estimate=fit$coefficients[,&quot;gestational.age&quot;],
-                    se=sqrt(fit$s2.post) * fit$stdev.unscaled[,&quot;gestational.age&quot;],
-                    p.value=fit$p.value[,&quot;gestational.age&quot;])
+<pre><code class="r">stats &lt;- data.frame(estimate=fit$coefficients[,&quot;ga&quot;],
+                    se=sqrt(fit$s2.post) * fit$stdev.unscaled[,&quot;ga&quot;],
+                    p.value=fit$p.value[,&quot;ga&quot;])
 </code></pre>
 
-<h2 id="toc_3">Add genomic coordinates for CpG sites (Illumina Beadchips)</h2>
+<h2>Add genomic coordinates for CpG sites (Illumina Beadchips)</h2>
 
 <p><code>dmrff</code> and all other methods for identifying differentially methylated regions
 require information about the genomic locations of all CpG sites. </p>
@@ -342,11 +278,13 @@ to annotate your EWAS summary statistics using the appropriate
 <p>For the Illumina 450K microaray, we use the
 <code>IlluminaHumanMethylation450kanno.ilmn12.hg19</code> package.</p>
 
-<pre><code class="r">if (!require(IlluminaHumanMethylation450kanno.ilmn12.hg19)) {
+<pre><code class="r">if (!require(IlluminaHumanMethylation450kanno.ilmn12.hg19, quietly=T)) {
     install.packages(&quot;BiocManager&quot;)
     BiocManager::install(&quot;IlluminaHumanMethylation450kanno.ilmn12.hg19&quot;)
-    library(IlluminaHumanMethylation450kanno.ilmn12.hg19)
 }
+</code></pre>
+
+<pre><code class="r">library(IlluminaHumanMethylation450kanno.ilmn12.hg19)
 </code></pre>
 
 <p>If we were using the more recent Illumina MethylationEPIC BeadChip,
@@ -364,19 +302,23 @@ annotation &lt;- cbind(as.data.frame(Locations), as.data.frame(Other))
 (<strong>Warning</strong>: we assume that the row names of the <code>stats</code> object
 are the Illumina CpG site identifiers, e.g. cg05775921).</p>
 
-<pre><code class="r">annotation &lt;- annotation[match(rownames(stats), rownames(annotation)),]
+<pre><code class="r">common &lt;- intersect(rownames(methylation), rownames(annotation))
+annotation &lt;- annotation[match(common, rownames(annotation)),]
+stats &lt;- stats[match(common, rownames(stats)),]
+methylation &lt;- methylation[match(common, rownames(methylation)),]
+
 stats &lt;- cbind(stats, annotation)
 </code></pre>
 
-<h2 id="toc_4">Apply <code>dmrff</code> to summary statistics</h2>
+<h2>Apply <code>dmrff</code> to summary statistics</h2>
 
-<p>If <code>dmrff</code> is not already installed, we install it and load it.</p>
+<p>If <code>dmrff</code> is not already installed, we install it and then load it:</p>
 
-<pre><code class="r">if (!require(dmrff)) {
+<pre><code class="r">if (!require(dmrff, quietly=T)) {
     library(devtools)
     install_github(&quot;perishky/dmrff&quot;)
-    library(dmrff)
 }
+library(dmrff)
 </code></pre>
 
 <p>Below we assume that you have already performed an epigenome-wide association analysis
@@ -391,31 +333,24 @@ which has the following columns:</p>
 <li><code>pos</code> (position of the CpG site on the chromosome).</li>
 </ul>
 
-<p>We also assume that you have loaded your DNA methylation dataset in R as matrix <code>meth</code>
+<p>We also assume that you have loaded your DNA methylation dataset in R as matrix <code>methylation</code>
 for which rows correspond to CpG sites and columns to samples.
 The DNA methylation levels are necessary for <code>dmrff</code> to calculate
 and adjust for dependencies between CpG sites.</p>
-
-<p>Before running <code>dmrff</code>, ensure that the dataset is ordered by CpG site genomic position.</p>
-
-<pre><code class="r">idx &lt;- order(stats$chr, stats$pos)
-stats &lt;- stats[idx,]
-meth &lt;- meth[idx,]
-</code></pre>
 
 <p><code>dmrff</code> can then be applied as follows.</p>
 
 <pre><code class="r">dmrs &lt;- dmrff(estimate=stats$estimate,
               se=stats$se,
               p.value=stats$p.value,
-              methylation=meth,
+              methylation=methylation,
               chr=stats$chr,
               pos=stats$pos,
               maxgap=500,
               verbose=T)
 </code></pre>
 
-<pre><code>## [dmrff.candidates] Wed Apr 10 12:11:26 2019 Found  27414  candidate bumps.
+<pre><code>## [dmrff.candidates] Tue Oct 29 17:01:56 2019 Found  41834  candidate regions.
 </code></pre>
 
 <p>The algorithm will then identify differentially methylated regions by:</p>
@@ -430,150 +365,16 @@ meth &lt;- meth[idx,]
 <p>Our output <code>dmrs</code> is a data frame listing all genomic regions tested
 along with summary statistics for each.</p>
 
-<p>For example, the first 10 regions might look like the following:</p>
+<p>We just keep regions with &gt; 1 CpG site and Bonferroni adjusted p &lt; 0.05.</p>
 
-<pre><code class="r">kable(dmrs[1:10,c(&quot;chr&quot;,&quot;start&quot;,&quot;end&quot;,&quot;n&quot;,&quot;estimate&quot;,&quot;se&quot;,&quot;z&quot;,&quot;p.value&quot;,&quot;p.adjust&quot;)])
+<pre><code class="r">dmrs &lt;- dmrs[which(dmrs$p.adjust &lt; 0.05 &amp; dmrs$n &gt; 1),]
 </code></pre>
 
-<table><thead>
-<tr>
-<th align="left">chr</th>
-<th align="right">start</th>
-<th align="right">end</th>
-<th align="right">n</th>
-<th align="right">estimate</th>
-<th align="right">se</th>
-<th align="right">z</th>
-<th align="right">p.value</th>
-<th align="right">p.adjust</th>
-</tr>
-</thead><tbody>
-<tr>
-<td align="left">chr6</td>
-<td align="right">31744831</td>
-<td align="right">31744927</td>
-<td align="right">3</td>
-<td align="right">-0.0052637</td>
-<td align="right">0.0011350</td>
-<td align="right">-4.6378024</td>
-<td align="right">0.0000035</td>
-<td align="right">1</td>
-</tr>
-<tr>
-<td align="left">chr6</td>
-<td align="right">31744636</td>
-<td align="right">31744636</td>
-<td align="right">1</td>
-<td align="right">-0.0132362</td>
-<td align="right">0.0037004</td>
-<td align="right">-3.5769566</td>
-<td align="right">0.0003476</td>
-<td align="right">1</td>
-</tr>
-<tr>
-<td align="left">chr6</td>
-<td align="right">31744612</td>
-<td align="right">31744612</td>
-<td align="right">1</td>
-<td align="right">-0.0150106</td>
-<td align="right">0.0044921</td>
-<td align="right">-3.3415449</td>
-<td align="right">0.0008331</td>
-<td align="right">1</td>
-</tr>
-<tr>
-<td align="left">chr6</td>
-<td align="right">31744391</td>
-<td align="right">31744391</td>
-<td align="right">1</td>
-<td align="right">-0.0098522</td>
-<td align="right">0.0029805</td>
-<td align="right">-3.3055030</td>
-<td align="right">0.0009481</td>
-<td align="right">1</td>
-</tr>
-<tr>
-<td align="left">chr6</td>
-<td align="right">31743769</td>
-<td align="right">31743952</td>
-<td align="right">5</td>
-<td align="right">-0.0028035</td>
-<td align="right">0.0009087</td>
-<td align="right">-3.0852055</td>
-<td align="right">0.0020341</td>
-<td align="right">1</td>
-</tr>
-<tr>
-<td align="left">chr6</td>
-<td align="right">31744037</td>
-<td align="right">31744339</td>
-<td align="right">3</td>
-<td align="right">-0.0016838</td>
-<td align="right">0.0013148</td>
-<td align="right">-1.2806828</td>
-<td align="right">0.2003051</td>
-<td align="right">1</td>
-</tr>
-<tr>
-<td align="left">chr6</td>
-<td align="right">31744033</td>
-<td align="right">31744033</td>
-<td align="right">1</td>
-<td align="right">-0.0006374</td>
-<td align="right">0.0009404</td>
-<td align="right">-0.6777688</td>
-<td align="right">0.4979183</td>
-<td align="right">1</td>
-</tr>
-<tr>
-<td align="left">chr6</td>
-<td align="right">31743986</td>
-<td align="right">31743986</td>
-<td align="right">1</td>
-<td align="right">0.0000130</td>
-<td align="right">0.0010535</td>
-<td align="right">0.0122943</td>
-<td align="right">0.9901908</td>
-<td align="right">1</td>
-</tr>
-<tr>
-<td align="left">chr6</td>
-<td align="right">31744398</td>
-<td align="right">31744524</td>
-<td align="right">2</td>
-<td align="right">-0.0038149</td>
-<td align="right">0.0015648</td>
-<td align="right">-2.4378715</td>
-<td align="right">0.0147740</td>
-<td align="right">1</td>
-</tr>
-<tr>
-<td align="left">chr6</td>
-<td align="right">31744545</td>
-<td align="right">31744545</td>
-<td align="right">1</td>
-<td align="right">-0.0123068</td>
-<td align="right">0.0051349</td>
-<td align="right">-2.3966699</td>
-<td align="right">0.0165448</td>
-<td align="right">1</td>
-</tr>
-</tbody></table>
+<p>There are 440 such DMRs.</p>
 
-<p>Some regions contain only one CpG site.
-EWAS is just fine for identifying associations with single CpG sites,
-so we might just remove these regions from the output.</p>
+<p>Here are the first 10 regions:</p>
 
-<pre><code class="r">dmrs &lt;- dmrs[which(dmrs$n &gt; 1),]
-</code></pre>
-
-<p>1769 regions with at least 2 CpG sites were tested.</p>
-
-<p>All genomic regions with p-value &lt; 0.05 (Bonferroni adjusted for multiple tests)
-can be listed as follows:</p>
-
-<pre><code class="r">kable(dmrs[which(dmrs$p.adjust &lt; 0.05),
-           c(&quot;chr&quot;,&quot;start&quot;,&quot;end&quot;,&quot;n&quot;,&quot;estimate&quot;,&quot;se&quot;,&quot;z&quot;,&quot;p.value&quot;,&quot;p.adjust&quot;)])
+<pre><code class="r">kable(dmrs[1:10,])
 </code></pre>
 
 <table><thead>
@@ -583,200 +384,6 @@ can be listed as follows:</p>
 <th align="right">start</th>
 <th align="right">end</th>
 <th align="right">n</th>
-<th align="right">estimate</th>
-<th align="right">se</th>
-<th align="right">z</th>
-<th align="right">p.value</th>
-<th align="right">p.adjust</th>
-</tr>
-</thead><tbody>
-<tr>
-<td align="left">2151</td>
-<td align="left">chr13</td>
-<td align="right">29148952</td>
-<td align="right">29149132</td>
-<td align="right">2</td>
-<td align="right">0.0085360</td>
-<td align="right">0.0015125</td>
-<td align="right">5.643680</td>
-<td align="right">0</td>
-<td align="right">0.0070554</td>
-</tr>
-<tr>
-<td align="left">2454</td>
-<td align="left">chr4</td>
-<td align="right">6695614</td>
-<td align="right">6695698</td>
-<td align="right">2</td>
-<td align="right">0.0104099</td>
-<td align="right">0.0018918</td>
-<td align="right">5.502625</td>
-<td align="right">0</td>
-<td align="right">0.0158602</td>
-</tr>
-<tr>
-<td align="left">2812</td>
-<td align="left">chr1</td>
-<td align="right">67519155</td>
-<td align="right">67519474</td>
-<td align="right">2</td>
-<td align="right">-0.0054861</td>
-<td align="right">0.0009986</td>
-<td align="right">-5.493554</td>
-<td align="right">0</td>
-<td align="right">0.0166972</td>
-</tr>
-</tbody></table>
-
-<p>We can also list the statistics for each CpG site in these regions.</p>
-
-<pre><code class="r">sites.idx &lt;- sapply(which(dmrs$p.adjust &lt; 0.05),
-                    function(dmr.idx) dmrs$start.idx[dmr.idx]:dmrs$end.idx[dmr.idx])
-sites.idx &lt;- unlist(sites.idx)
-kable(stats[sites.idx, c(&quot;chr&quot;,&quot;pos&quot;,&quot;UCSC_RefGene_Name&quot;,&quot;estimate&quot;,&quot;se&quot;,&quot;p.value&quot;)])
-</code></pre>
-
-<table><thead>
-<tr>
-<th align="left"></th>
-<th align="left">chr</th>
-<th align="right">pos</th>
-<th align="left">UCSC_RefGene_Name</th>
-<th align="right">estimate</th>
-<th align="right">se</th>
-<th align="right">p.value</th>
-</tr>
-</thead><tbody>
-<tr>
-<td align="left">cg15887927</td>
-<td align="left">chr13</td>
-<td align="right">29148952</td>
-<td align="left"></td>
-<td align="right">0.0062306</td>
-<td align="right">0.0022104</td>
-<td align="right">0.0087764</td>
-</tr>
-<tr>
-<td align="left">cg24561305</td>
-<td align="left">chr13</td>
-<td align="right">29149132</td>
-<td align="left"></td>
-<td align="right">0.0111855</td>
-<td align="right">0.0023987</td>
-<td align="right">0.0000706</td>
-</tr>
-<tr>
-<td align="left">cg26233331</td>
-<td align="left">chr4</td>
-<td align="right">6695614</td>
-<td align="left">S100P;S100P</td>
-<td align="right">0.0092628</td>
-<td align="right">0.0019054</td>
-<td align="right">0.0000411</td>
-</tr>
-<tr>
-<td align="left">cg22266967</td>
-<td align="left">chr4</td>
-<td align="right">6695698</td>
-<td align="left">S100P</td>
-<td align="right">0.0065167</td>
-<td align="right">0.0024427</td>
-<td align="right">0.0125828</td>
-</tr>
-<tr>
-<td align="left">cg01802975</td>
-<td align="left">chr1</td>
-<td align="right">67519155</td>
-<td align="left">SLC35D1</td>
-<td align="right">-0.0054169</td>
-<td align="right">0.0010328</td>
-<td align="right">0.0000144</td>
-</tr>
-<tr>
-<td align="left">cg17930550</td>
-<td align="left">chr1</td>
-<td align="right">67519474</td>
-<td align="left">SLC35D1</td>
-<td align="right">-0.0059922</td>
-<td align="right">0.0026819</td>
-<td align="right">0.0336787</td>
-</tr>
-</tbody></table>
-
-<h2 id="toc_5">Annotating differentially methylated regions (Illumina Beadchips)</h2>
-
-<p>Using the CpG site annotations described earlier, we can also
-annotate differentially methylated regions.</p>
-
-<p>To save time, we will only annotate the top 50 differentially methylated regions.</p>
-
-<pre><code class="r">dmrs50 &lt;- dmrs[order(dmrs$p.value)[1:50],]
-</code></pre>
-
-<p>For annotation, we will use the following function.</p>
-
-<pre><code class="r">annotate.regions &lt;- function(dmrs, stats, package) {
-    if (!require(package, character.only=T)) {
-        install.packages(&quot;BiocManager&quot;)
-        BiocManager::install(package)
-        library(package, character.only=T)
-    }    
-    data(list=package)
-    data(Locations)
-    data(Other)
-    annotation &lt;- cbind(as.data.frame(Locations), as.data.frame(Other))
-
-    stopifnot(all(rownames(stats) %in% rownames(annotation)))
-
-    annotation &lt;- annotation[match(rownames(stats), rownames(annotation)),]
-    stats &lt;- cbind(stats, annotation)
-
-    dmrs.annot &lt;- lapply(1:nrow(dmrs), function(dmr.idx) {
-        annotation$Forward_Sequence &lt;- annotation$SourceSeq &lt;- annotation$pos &lt;- annotation$chr &lt;- NULL
-        site.idx &lt;- dmrs$start.idx[dmr.idx]:dmrs$end.idx[dmr.idx]
-        annotation &lt;- annotation[site.idx,]
-        multi.idx &lt;- grep(&quot;UCSC_RefGene&quot;, colnames(annotation))
-        for (idx in multi.idx)
-            annotation[[idx]] &lt;- strsplit(annotation[[idx]], &quot;;&quot;)
-        n &lt;- sapply(annotation[[multi.idx[1]]], length)
-        annotation &lt;- c(lapply(annotation[multi.idx], unlist),
-                        lapply(annotation[-multi.idx], rep, n))
-        annotation &lt;- do.call(data.frame, c(annotation, list(stringsAsFactors=F)))
-        sapply(annotation, function(x) paste(setdiff(unique(x),&quot;&quot;), collapse=&quot;;&quot;))
-    })
-    dmrs.annot &lt;- do.call(rbind, dmrs.annot)
-
-    cbind(dmrs, dmrs.annot)
-}
-</code></pre>
-
-<p>We annotate the top 50 differentially methylated regions.</p>
-
-<pre><code class="r">dmrs50 &lt;- annotate.regions(dmrs50, stats, &quot;IlluminaHumanMethylation450kanno.ilmn12.hg19&quot;)
-</code></pre>
-
-<p>If we were using the more recent Illumina MethylationEPIC BeadChip,
-then we would use the <code>IlluminaHumanMethylationEPICanno.ilm10b2.hg19</code> package name instead.</p>
-
-<p>Here we can see the information added for the regions with
-Bonferonni adjusted p-values less than 0.05.</p>
-
-<pre><code class="r">kable(dmrs50[which(dmrs50$p.adjust &lt; 0.05),])
-</code></pre>
-
-<table><thead>
-<tr>
-<th align="left"></th>
-<th align="left">chr</th>
-<th align="right">start</th>
-<th align="right">end</th>
-<th align="right">n</th>
-<th align="right">start.idx</th>
-<th align="right">end.idx</th>
-<th align="right">start.orig</th>
-<th align="right">end.orig</th>
-<th align="right">z.orig</th>
-<th align="right">p.orig</th>
 <th align="right">B</th>
 <th align="right">S</th>
 <th align="right">estimate</th>
@@ -784,119 +391,788 @@ Bonferonni adjusted p-values less than 0.05.</p>
 <th align="right">z</th>
 <th align="right">p.value</th>
 <th align="right">p.adjust</th>
-<th align="left">UCSC_RefGene_Name</th>
-<th align="left">UCSC_RefGene_Accession</th>
-<th align="left">UCSC_RefGene_Group</th>
-<th align="left">strand</th>
-<th align="left">Random_Loci</th>
-<th align="left">Methyl27_Loci</th>
-<th align="left">Phantom</th>
-<th align="left">DMR</th>
-<th align="left">Enhancer</th>
-<th align="left">HMM_Island</th>
-<th align="left">Regulatory_Feature_Name</th>
-<th align="left">Regulatory_Feature_Group</th>
-<th align="left">DHS</th>
 </tr>
 </thead><tbody>
 <tr>
-<td align="left">2151</td>
-<td align="left">chr13</td>
-<td align="right">29148952</td>
-<td align="right">29149132</td>
-<td align="right">2</td>
-<td align="right">102277</td>
-<td align="right">102278</td>
-<td align="right">102277</td>
-<td align="right">102278</td>
-<td align="right">5.643680</td>
+<td align="left">1</td>
+<td align="left">chr6</td>
+<td align="right">32120584</td>
+<td align="right">32120878</td>
+<td align="right">6</td>
+<td align="right">0.0133915</td>
+<td align="right">0.0014515</td>
+<td align="right">0.0133915</td>
+<td align="right">0.0014515</td>
+<td align="right">9.225734</td>
 <td align="right">0</td>
-<td align="right">0.0085360</td>
-<td align="right">0.0015125</td>
-<td align="right">0.0085360</td>
-<td align="right">0.0015125</td>
-<td align="right">5.643680</td>
-<td align="right">0</td>
-<td align="right">0.0070554</td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="left"></td>
+<td align="right">0.0000000</td>
 </tr>
 <tr>
-<td align="left">2454</td>
-<td align="left">chr4</td>
-<td align="right">6695614</td>
-<td align="right">6695698</td>
-<td align="right">2</td>
-<td align="right">271174</td>
-<td align="right">271175</td>
-<td align="right">271174</td>
-<td align="right">271175</td>
-<td align="right">5.502625</td>
+<td align="left">2</td>
+<td align="left">chr6</td>
+<td align="right">32119944</td>
+<td align="right">32120203</td>
+<td align="right">3</td>
+<td align="right">0.0047073</td>
+<td align="right">0.0006831</td>
+<td align="right">0.0047073</td>
+<td align="right">0.0006831</td>
+<td align="right">6.891180</td>
 <td align="right">0</td>
-<td align="right">0.0104099</td>
-<td align="right">0.0018918</td>
-<td align="right">0.0104099</td>
-<td align="right">0.0018918</td>
-<td align="right">5.502625</td>
-<td align="right">0</td>
-<td align="right">0.0158602</td>
-<td align="left">S100P</td>
-<td align="left">NM_005980</td>
-<td align="left">1stExon;5&#39;UTR</td>
-<td align="left">-</td>
-<td align="left"></td>
-<td align="left">TRUE</td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="left"></td>
+<td align="right">0.0000021</td>
 </tr>
 <tr>
-<td align="left">2812</td>
-<td align="left">chr1</td>
-<td align="right">67519155</td>
-<td align="right">67519474</td>
+<td align="left">4</td>
+<td align="left">chr6</td>
+<td align="right">32121143</td>
+<td align="right">32121156</td>
 <td align="right">2</td>
-<td align="right">17843</td>
-<td align="right">17844</td>
-<td align="right">17843</td>
-<td align="right">17844</td>
-<td align="right">-5.493554</td>
+<td align="right">0.0089995</td>
+<td align="right">0.0012446</td>
+<td align="right">0.0089995</td>
+<td align="right">0.0012446</td>
+<td align="right">7.230775</td>
 <td align="right">0</td>
-<td align="right">-0.0054861</td>
-<td align="right">0.0009986</td>
-<td align="right">-0.0054861</td>
-<td align="right">0.0009986</td>
-<td align="right">-5.493554</td>
+<td align="right">0.0000002</td>
+</tr>
+<tr>
+<td align="left">21</td>
+<td align="left">chr6</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">47</td>
+<td align="right">-0.0004568</td>
+<td align="right">0.0000769</td>
+<td align="right">-0.0004568</td>
+<td align="right">0.0000769</td>
+<td align="right">-5.943456</td>
 <td align="right">0</td>
-<td align="right">0.0166972</td>
-<td align="left">SLC35D1</td>
-<td align="left">NM_015139</td>
-<td align="left">Body</td>
-<td align="left">+</td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="left">high-CpG:67292032-67292659</td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="left">1:67291641-67292781</td>
-<td align="left"></td>
-<td align="left"></td>
-<td align="left">TRUE</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="left">23</td>
+<td align="left">chr6</td>
+<td align="right">33245488</td>
+<td align="right">33245537</td>
+<td align="right">3</td>
+<td align="right">-0.0065765</td>
+<td align="right">0.0007459</td>
+<td align="right">-0.0065765</td>
+<td align="right">0.0007459</td>
+<td align="right">-8.816650</td>
+<td align="right">0</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr>
+<td align="left">28</td>
+<td align="left">chr6</td>
+<td align="right">33245893</td>
+<td align="right">33246094</td>
+<td align="right">5</td>
+<td align="right">-0.0038212</td>
+<td align="right">0.0005975</td>
+<td align="right">-0.0038212</td>
+<td align="right">0.0005975</td>
+<td align="right">-6.395753</td>
+<td align="right">0</td>
+<td align="right">0.0000598</td>
+</tr>
+<tr>
+<td align="left">46</td>
+<td align="left">chr11</td>
+<td align="right">14994230</td>
+<td align="right">14994561</td>
+<td align="right">4</td>
+<td align="right">0.0052970</td>
+<td align="right">0.0008988</td>
+<td align="right">0.0052970</td>
+<td align="right">0.0008988</td>
+<td align="right">5.893703</td>
+<td align="right">0</td>
+<td align="right">0.0014143</td>
+</tr>
+<tr>
+<td align="left">76</td>
+<td align="left">chr6</td>
+<td align="right">32117292</td>
+<td align="right">32117377</td>
+<td align="right">2</td>
+<td align="right">0.0030610</td>
+<td align="right">0.0005236</td>
+<td align="right">0.0030610</td>
+<td align="right">0.0005236</td>
+<td align="right">5.846178</td>
+<td align="right">0</td>
+<td align="right">0.0018838</td>
+</tr>
+<tr>
+<td align="left">98</td>
+<td align="left">chr6</td>
+<td align="right">30653191</td>
+<td align="right">30653242</td>
+<td align="right">2</td>
+<td align="right">-0.0032880</td>
+<td align="right">0.0004738</td>
+<td align="right">-0.0032880</td>
+<td align="right">0.0004738</td>
+<td align="right">-6.940174</td>
+<td align="right">0</td>
+<td align="right">0.0000015</td>
+</tr>
+<tr>
+<td align="left">103</td>
+<td align="left">chr6</td>
+<td align="right">30653407</td>
+<td align="right">30653732</td>
+<td align="right">4</td>
+<td align="right">-0.0033657</td>
+<td align="right">0.0006041</td>
+<td align="right">-0.0033657</td>
+<td align="right">0.0006041</td>
+<td align="right">-5.571241</td>
+<td align="right">0</td>
+<td align="right">0.0094726</td>
+</tr>
+</tbody></table>
+
+<p>We can also list the information for each CpG site in these regions.</p>
+
+<pre><code class="r">sites &lt;- dmrff.sites(dmrs, stats$chr, stats$pos)
+sites &lt;- cbind(sites, stats[sites$site, c(&quot;UCSC_RefGene_Name&quot;, &quot;estimate&quot;, &quot;p.value&quot;)])
+sites &lt;- cbind(sites, dmr=dmrs[sites$region,c(&quot;start&quot;,&quot;end&quot;,&quot;z&quot;,&quot;p.adjust&quot;)])
+</code></pre>
+
+<p>Here are the sites in the largest DMR:</p>
+
+<pre><code class="r">max.region &lt;- which.max(dmrs$n)
+kable(sites[which(sites$region == max.region),],row.names=F)
+</code></pre>
+
+<table><thead>
+<tr>
+<th align="right">region</th>
+<th align="right">site</th>
+<th align="left">chr</th>
+<th align="right">pos</th>
+<th align="left">UCSC_RefGene_Name</th>
+<th align="right">estimate</th>
+<th align="right">p.value</th>
+<th align="right">dmr.start</th>
+<th align="right">dmr.end</th>
+<th align="right">dmr.z</th>
+<th align="right">dmr.p.adjust</th>
+</tr>
+</thead><tbody>
+<tr>
+<td align="right">4</td>
+<td align="right">206488</td>
+<td align="left">chr6</td>
+<td align="right">32013699</td>
+<td align="left">TNXB;TNXB;TNXB</td>
+<td align="right">0.0033248</td>
+<td align="right">0.0013753</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">259872</td>
+<td align="left">chr6</td>
+<td align="right">32013710</td>
+<td align="left">TNXB;TNXB;TNXB</td>
+<td align="right">0.0039750</td>
+<td align="right">0.0001142</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">253108</td>
+<td align="left">chr6</td>
+<td align="right">32013974</td>
+<td align="left">TNXB;TNXB</td>
+<td align="right">0.0007077</td>
+<td align="right">0.1580097</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">76731</td>
+<td align="left">chr6</td>
+<td align="right">32014003</td>
+<td align="left">TNXB;TNXB</td>
+<td align="right">0.0014911</td>
+<td align="right">0.0152387</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">132640</td>
+<td align="left">chr6</td>
+<td align="right">32014148</td>
+<td align="left">TNXB;TNXB</td>
+<td align="right">0.0016923</td>
+<td align="right">0.0819380</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">300117</td>
+<td align="left">chr6</td>
+<td align="right">32014189</td>
+<td align="left">TNXB;TNXB</td>
+<td align="right">0.0020784</td>
+<td align="right">0.0073160</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">83714</td>
+<td align="left">chr6</td>
+<td align="right">32014300</td>
+<td align="left">TNXB;TNXB</td>
+<td align="right">0.0016903</td>
+<td align="right">0.0294514</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">246136</td>
+<td align="left">chr6</td>
+<td align="right">32014476</td>
+<td align="left">TNXB;TNXB</td>
+<td align="right">0.0013224</td>
+<td align="right">0.5403594</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">271379</td>
+<td align="left">chr6</td>
+<td align="right">32014484</td>
+<td align="left">TNXB;TNXB</td>
+<td align="right">0.0007101</td>
+<td align="right">0.5998312</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">145379</td>
+<td align="left">chr6</td>
+<td align="right">32014510</td>
+<td align="left">TNXB;TNXB</td>
+<td align="right">0.0016457</td>
+<td align="right">0.2082371</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">174594</td>
+<td align="left">chr6</td>
+<td align="right">32014605</td>
+<td align="left">TNXB;TNXB</td>
+<td align="right">-0.0001531</td>
+<td align="right">0.8101197</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">180049</td>
+<td align="left">chr6</td>
+<td align="right">32014663</td>
+<td align="left">TNXB;TNXB</td>
+<td align="right">0.0029876</td>
+<td align="right">0.0015277</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">172312</td>
+<td align="left">chr6</td>
+<td align="right">32014674</td>
+<td align="left">TNXB;TNXB</td>
+<td align="right">0.0009082</td>
+<td align="right">0.3807045</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">144588</td>
+<td align="left">chr6</td>
+<td align="right">32014893</td>
+<td align="left">TNXB;TNXB</td>
+<td align="right">0.0021443</td>
+<td align="right">0.0006677</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">254656</td>
+<td align="left">chr6</td>
+<td align="right">32014926</td>
+<td align="left">TNXB;TNXB</td>
+<td align="right">0.0007943</td>
+<td align="right">0.0784213</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">96182</td>
+<td align="left">chr6</td>
+<td align="right">32015083</td>
+<td align="left">TNXB;TNXB</td>
+<td align="right">0.0012410</td>
+<td align="right">0.1573622</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">251549</td>
+<td align="left">chr6</td>
+<td align="right">32015175</td>
+<td align="left">TNXB;TNXB</td>
+<td align="right">0.0004095</td>
+<td align="right">0.4306034</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">228450</td>
+<td align="left">chr6</td>
+<td align="right">32015215</td>
+<td align="left">TNXB;TNXB</td>
+<td align="right">0.0004607</td>
+<td align="right">0.3710192</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">214234</td>
+<td align="left">chr6</td>
+<td align="right">32015297</td>
+<td align="left">TNXB;TNXB</td>
+<td align="right">0.0030980</td>
+<td align="right">0.0001455</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">53331</td>
+<td align="left">chr6</td>
+<td align="right">32015618</td>
+<td align="left">TNXB</td>
+<td align="right">0.0001046</td>
+<td align="right">0.8517118</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">190142</td>
+<td align="left">chr6</td>
+<td align="right">32015688</td>
+<td align="left">TNXB</td>
+<td align="right">0.0010612</td>
+<td align="right">0.0066559</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">141947</td>
+<td align="left">chr6</td>
+<td align="right">32015713</td>
+<td align="left">TNXB</td>
+<td align="right">0.0014876</td>
+<td align="right">0.0432615</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">98162</td>
+<td align="left">chr6</td>
+<td align="right">32015737</td>
+<td align="left">TNXB</td>
+<td align="right">0.0013062</td>
+<td align="right">0.0218474</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">46174</td>
+<td align="left">chr6</td>
+<td align="right">32015773</td>
+<td align="left">TNXB</td>
+<td align="right">0.0021020</td>
+<td align="right">0.0396521</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">253689</td>
+<td align="left">chr6</td>
+<td align="right">32016070</td>
+<td align="left">TNXB</td>
+<td align="right">0.0004271</td>
+<td align="right">0.4273317</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">289210</td>
+<td align="left">chr6</td>
+<td align="right">32016100</td>
+<td align="left">TNXB</td>
+<td align="right">0.0001844</td>
+<td align="right">0.5002354</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">288177</td>
+<td align="left">chr6</td>
+<td align="right">32016115</td>
+<td align="left">TNXB</td>
+<td align="right">-0.0002369</td>
+<td align="right">0.4819618</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">312500</td>
+<td align="left">chr6</td>
+<td align="right">32016172</td>
+<td align="left">TNXB</td>
+<td align="right">0.0004049</td>
+<td align="right">0.5155801</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">49395</td>
+<td align="left">chr6</td>
+<td align="right">32016214</td>
+<td align="left">TNXB</td>
+<td align="right">0.0016431</td>
+<td align="right">0.0583541</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">215071</td>
+<td align="left">chr6</td>
+<td align="right">32016239</td>
+<td align="left">TNXB</td>
+<td align="right">0.0025661</td>
+<td align="right">0.1157791</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">166791</td>
+<td align="left">chr6</td>
+<td align="right">32016247</td>
+<td align="left">TNXB</td>
+<td align="right">0.0019620</td>
+<td align="right">0.0495010</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">108179</td>
+<td align="left">chr6</td>
+<td align="right">32016257</td>
+<td align="left">TNXB</td>
+<td align="right">0.0024417</td>
+<td align="right">0.0048269</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">291014</td>
+<td align="left">chr6</td>
+<td align="right">32016288</td>
+<td align="left">TNXB</td>
+<td align="right">0.0033794</td>
+<td align="right">0.0000426</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">243825</td>
+<td align="left">chr6</td>
+<td align="right">32016290</td>
+<td align="left">TNXB</td>
+<td align="right">0.0019575</td>
+<td align="right">0.0083271</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">104944</td>
+<td align="left">chr6</td>
+<td align="right">32016360</td>
+<td align="left">TNXB</td>
+<td align="right">0.0000404</td>
+<td align="right">0.9559929</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">180966</td>
+<td align="left">chr6</td>
+<td align="right">32016368</td>
+<td align="left">TNXB</td>
+<td align="right">0.0012041</td>
+<td align="right">0.2480942</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">85924</td>
+<td align="left">chr6</td>
+<td align="right">32016426</td>
+<td align="left">TNXB</td>
+<td align="right">0.0021802</td>
+<td align="right">0.0132794</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">198624</td>
+<td align="left">chr6</td>
+<td align="right">32016473</td>
+<td align="left">TNXB</td>
+<td align="right">0.0009756</td>
+<td align="right">0.0614283</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">15233</td>
+<td align="left">chr6</td>
+<td align="right">32016520</td>
+<td align="left">TNXB</td>
+<td align="right">0.0002999</td>
+<td align="right">0.5368667</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">283755</td>
+<td align="left">chr6</td>
+<td align="right">32016535</td>
+<td align="left">TNXB</td>
+<td align="right">-0.0005487</td>
+<td align="right">0.4551498</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">155224</td>
+<td align="left">chr6</td>
+<td align="right">32016678</td>
+<td align="left">TNXB</td>
+<td align="right">0.0003520</td>
+<td align="right">0.5391198</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">216005</td>
+<td align="left">chr6</td>
+<td align="right">32016690</td>
+<td align="left">TNXB</td>
+<td align="right">-0.0002819</td>
+<td align="right">0.6021935</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">237173</td>
+<td align="left">chr6</td>
+<td align="right">32016803</td>
+<td align="left">TNXB</td>
+<td align="right">0.0015205</td>
+<td align="right">0.0448445</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">296767</td>
+<td align="left">chr6</td>
+<td align="right">32017024</td>
+<td align="left">TNXB</td>
+<td align="right">0.0015014</td>
+<td align="right">0.1116998</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">204967</td>
+<td align="left">chr6</td>
+<td align="right">32017079</td>
+<td align="left">TNXB</td>
+<td align="right">0.0010082</td>
+<td align="right">0.0341457</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">290092</td>
+<td align="left">chr6</td>
+<td align="right">32017089</td>
+<td align="left">TNXB</td>
+<td align="right">0.0009824</td>
+<td align="right">0.0197532</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td align="right">233696</td>
+<td align="left">chr6</td>
+<td align="right">32017224</td>
+<td align="left">TNXB</td>
+<td align="right">0.0006594</td>
+<td align="right">0.2466544</td>
+<td align="right">32013699</td>
+<td align="right">32017224</td>
+<td align="right">-5.943456</td>
+<td align="right">0.0010452</td>
 </tr>
 </tbody></table>
 

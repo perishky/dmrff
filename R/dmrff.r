@@ -2,6 +2,7 @@
 #'
 #' Identifying differentially methylated regions efficiently with power and control.
 #'
+#' Note: the function checks that 
 #' @param estimate Vector of association effect estimates
 #' (corresponds to rows of \code{methylation}).
 #' @param se Vector of standard errors of the effect estimates.
@@ -24,23 +25,38 @@
 #'               chr,      ## chromosome of each CpG site
 #'               pos)      ## position of each CpG site
 #'                      
-#' dmrs[which(dmrs$p.adjust < 0.05),
-#'      c("chr","start","end","n","B","S","z","p.value","p.adjust")]
+#' dmrs[which(dmrs$p.adjust < 0.05 & dmrs$n > 1),]
 #'
 #' @export
 dmrff <- function(estimate, se, p.value, methylation, chr, pos,
-                  maxgap=500, p.cutoff=0.05, verbose=T) {
+                  maxgap=500, p.cutoff=0.05, verbose=T,debug=F) {
     stopifnot(is.vector(estimate))
     stopifnot(is.vector(se))
     stopifnot(is.vector(p.value))
     stopifnot(is.matrix(methylation))
+    stopifnot(is.vector(chr))
+    stopifnot(is.vector(pos))
     stopifnot(length(estimate) == length(se))
     stopifnot(length(estimate) == nrow(methylation))
     stopifnot(length(estimate) == length(p.value))
     stopifnot(length(estimate) == length(chr))
     stopifnot(length(estimate) == length(pos))
 
-    
+    if (debug) browser()
+
+    # sort input by chromosomal position
+    idx <- order(chr,pos)
+    sorted <- identical(idx, 1:length(idx))
+    if (!sorted) {    
+        estimate <- estimate[idx]
+        se <- se[idx]
+        p.value <- p.value[idx]
+        chr <- chr[idx]
+        pos <- pos[idx]
+        methylation <- methylation[idx,,drop=F]
+    }
+
+    # identify candidate regions
     candidates <- dmrff.candidates(estimate=estimate,
                                    p.value=p.value,
                                    chr=chr, 
@@ -48,13 +64,15 @@ dmrff <- function(estimate, se, p.value, methylation, chr, pos,
                                    maxgap=maxgap,
                                    p.cutoff=p.cutoff,
                                    verbose=verbose)
- 
+
+    # identify sub-regions that maximize statistical significance
     stats <- shrink.candidates(candidates$start.idx, candidates$end.idx,
                                function(start.idx,end.idx) {
                                    idx <- start.idx:end.idx
                                    ivwfe.getz(estimate[idx], se[idx], methylation[idx,,drop=F])
                                })
 
+    # calculate B and S statistics for each region (recall z=B/S)
     full <- do.call(rbind, mclapply(1:nrow(stats), function(i) {
         idx <- stats$start.idx[i]:stats$end.idx[i]
         ivwfe.stats(estimate[idx], se[idx], methylation[idx,,drop=F])
@@ -62,12 +80,12 @@ dmrff <- function(estimate, se, p.value, methylation, chr, pos,
 
     stats$estimate <- stats$B <- full[,"B"]
     stats$se <- stats$S <- full[,"S"]
-    
-    collate.stats(stats, chr, pos)
+
+    collate.stats(stats, chr, pos, simple=!sorted)
 }
 
 
-collate.stats <- function(stats, chr, pos) {   
+collate.stats <- function(stats, chr, pos, simple=F) {   
     stats <- with(stats, data.frame(chr=chr[start.idx],
                                     start=pos[start.idx],
                                     end=pos[end.idx],
@@ -86,5 +104,7 @@ collate.stats <- function(stats, chr, pos) {
                                     p.value=2*pnorm(-abs(z), lower.tail=T)))
     number.tests <- length(chr) + calculate.number.shrink.tests(stats)
     stats$p.adjust <- pmin(1, stats$p.value * number.tests)
+    if (simple)
+        stats$start.idx <- stats$end.idx <- stats$start.orig <- stats$end.orig <- stats$z.orig <- stats$p.orig <- NULL
     stats
 }

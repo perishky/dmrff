@@ -18,7 +18,7 @@ generate.true.dmr.var <- function(mat, chr, pos, cluster.sites=40, dmr.sites=20,
     stopifnot(cluster.position >= 0 && cluster.position <= 1)
     stopifnot(r >= 0 && r <= 1)
     ## identify clusters
-    clusters <- bh.clusterMaker(chr, pos, maxGap=maxgap)
+    clusters <- dmrff:::bh.clusterMaker(chr, pos, maxGap=maxgap)
     cluster.size <- table(clusters)
     cluster.size <- cluster.size[which(cluster.size >= cluster.sites)]
 

@@ -65,3 +65,16 @@ ret[which(ret$p.adjust < 0.05),]
 ##          z      p.value    p.adjust
 ## 1 4.568012 4.923719e-06 0.005307769
 
+
+## test unordered input
+idx <- sample(1:nrow(ewas.stats), size=nrow(ewas.stats), replace=F)
+ret <- dmrff(ewas.stats$estimate[idx],
+             ewas.stats$se[idx],
+             ewas.stats$p.value[idx],
+             dataset$methylation[idx,,drop=F],
+             manifest$chr[idx],
+             manifest$pos[idx])
+
+stopifnot(sum(ret$p.adjust < 0.05) == 1)
+
+ret[which(ret$p.adjust < 0.05),]

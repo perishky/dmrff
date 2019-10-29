@@ -14,15 +14,25 @@
 #'
 #' @export
 dmrff.pre <- function(estimate, se, methylation, chr, pos, maxsize=20, verbose=T) {
-    idx <- order(chr, pos)
+    # sort input by chromosomal position
+    idx <- order(chr,pos)
+    sorted <- identical(idx, 1:length(idx))
+    if (!sorted) {
+        estimate <- estimate[idx]
+        se <- se[idx]
+        chr <- chr[idx]
+        pos <- pos[idx]
+        methylation <- methylation[idx,,drop=F]
+    }
+    
     methylation <- impute.matrix(methylation)
     m <- methylation - rowMeans(methylation)
     ss <- sqrt(rowSums(m^2))
     rho <- do.call(cbind, mclapply(1:maxsize, function(size) {
-        sapply(1:length(idx), function(i) {
+        sapply(1:length(chr), function(i) {
             if (i + size <= length(idx)) {
-                numer <- sum(m[idx[i],] * m[idx[i+size],])
-                denom <- ss[idx[i]] * ss[idx[i+size]]
+                numer <- sum(m[i,] * m[i+size,])
+                denom <- ss[i] * ss[i+size]
                 numer/denom
             }
             else NA

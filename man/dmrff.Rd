@@ -5,7 +5,7 @@
 \title{dmrff}
 \usage{
 dmrff(estimate, se, p.value, methylation, chr, pos, maxgap = 500,
-  p.cutoff = 0.05, verbose = T)
+  p.cutoff = 0.05, verbose = T, debug = F)
 }
 \arguments{
 \item{estimate}{Vector of association effect estimates
@@ -34,6 +34,9 @@ A data frame listing all candidate regions and their summary statistics.
 \description{
 Identifying differentially methylated regions efficiently with power and control.
 }
+\details{
+Note: the function checks that
+}
 \examples{
 
 dmrs <- dmrff(estimate, ## effect estimate for each CpG site
@@ -43,7 +46,6 @@ dmrs <- dmrff(estimate, ## effect estimate for each CpG site
               chr,      ## chromosome of each CpG site
               pos)      ## position of each CpG site
                      
-dmrs[which(dmrs$p.adjust < 0.05),
-     c("chr","start","end","n","B","S","z","p.value","p.adjust")]
+dmrs[which(dmrs$p.adjust < 0.05 & dmrs$n > 1),]
 
 }

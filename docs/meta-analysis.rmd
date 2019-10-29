@@ -1,0 +1,258 @@
+---
+title: "Meta-analysis using dmrff" 
+output:
+  pdf_document: default
+  word_document:
+    highlight: tango
+  html_document:
+    toc: true
+---
+
+# Meta-analysis using dmrff
+
+## Download and prepare DNA methylation datasets
+
+We'll use a couple of small cord blood DNA methylation datasets
+available on GEO: GSE79056, GSE62924.
+
+*Loading each dataset takes about 1 minute.*
+```{r}
+accessions <- c("GSE79056", "GSE62924")
+library(geograbi) ## https://github.com/yousefi138
+samples <- sapply(accessions, geograbi.get.samples, simplify=F)
+vars <- sapply(samples, geograbi.extract.characteristics, simplify=F)
+system.time(methylation <- sapply(accessions, geograbi.get.data, simplify=F))
+```
+
+Remove non-CpG probes from the datasets.
+```{r}
+for (acc in accessions)
+    methylation[[acc]] <- methylation[[acc]][grepl("^c", rownames(methylation[[acc]])),]
+```
+
+Extract the variable of interest from each dataset.
+```{r}
+variable <- sapply(accessions, function(acc) {
+    idx <- grep("(ga weeks|gestational_age|gestational age)", colnames(vars[[acc]]))
+    stopifnot(length(idx) == 1)
+    as.numeric(vars[[acc]][,idx])
+}, simplify=F)
+```
+
+Remove samples with incomplete data.
+```{r}
+for (acc in accessions) {
+    idx <- which(!is.na(variable[[acc]]))
+    samples[[acc]] <- samples[[acc]][idx,]
+    vars[[acc]] <- vars[[acc]][idx,]
+    variable[[acc]] <- variable[[acc]][idx]
+    methylation[[acc]] <- methylation[[acc]][,idx]
+}
+```
+
+## Calculate surrogate variables to handle unknown confounding
+*SVA takes a few seconds for each dataset.*
+```{r}
+library(sva, quietly=T)
+set.seed(20191029)
+covariates <- sapply(accessions, function(acc) {
+    mod <- model.matrix(~ var, data.frame(var=variable[[acc]]))
+    mod0 <- mod[,1,drop=F]
+    random.idx <- sample(1:nrow(methylation[[acc]]), 5000)
+    meth.sva <- methylation[[acc]][random.idx,]
+    meth.mean <- rowMeans(meth.sva, na.rm=T)
+    idx <- which(is.na(meth.sva), arr.ind=T)
+    if (nrow(idx) > 0)
+        meth.sva[idx] <- meth.mean[idx[,1]]
+    sva(meth.sva, mod=mod, mod0=mod0)$sv
+}, simplify=F)
+```
+
+## Test the associations with gestational age
+
+*Testing associations takes a few seconds for each dataset.*
+```{r}
+library(limma)
+stats <- sapply(accessions, function(acc) {
+    mod <- model.matrix(~ ., data.frame(ga=variable[[acc]],
+                                        covariates[[acc]]))
+    fit <- lmFit(methylation[[acc]], mod)
+    fit <- eBayes(fit)
+    data.frame(estimate=fit$coefficients[,"ga"],
+               se=sqrt(fit$s2.post) * fit$stdev.unscaled[,"ga"],
+               p.value=fit$p.value[,"ga"])
+},simplify=F)
+```
+
+Now we check the agreement between the datasets.
+```{r}
+kable(sapply(stats, function(a) sapply(stats, function(b) {
+    sites <- intersect(rownames(a), rownames(b))
+    sites <- sites[order(a[sites,"p.value"])[1:100]]
+    cor(a[sites,"estimate"], b[sites,"estimate"])
+})))
+```
+
+A previous study reported thousands of associations with gestational age:
+> Bohlin J, et al.
+> Prediction of gestational age based on genome-wide
+> differentially methylated regions.
+> Genome Biol. 2016;17(1):207.
+
+The effect estimates are strongly associated.
+```{r}
+bohlin <- read.csv("bohlin.csv",stringsAsFactors=F,row.names=1)
+kable(sapply(stats, function(stats) {
+    cor(bohlin$estimate, stats[rownames(bohlin),"estimate"], use="p")
+}))
+```
+
+## Annotate summary statistics with genomic locations
+
+If your data was generated using one of the Illumina BeadChips, then it is possible
+to annotate your EWAS summary statistics using the appropriate
+[Bioconductor](https://www.bioconductor.org/) annotation package.
+
+For the Illumina 450K microaray, we use the
+`IlluminaHumanMethylation450kanno.ilmn12.hg19` package.
+
+```{r}
+if (!require(IlluminaHumanMethylation450kanno.ilmn12.hg19, quietly=T)) {
+    install.packages("BiocManager")
+    BiocManager::install("IlluminaHumanMethylation450kanno.ilmn12.hg19")
+}
+library(IlluminaHumanMethylation450kanno.ilmn12.hg19)
+```
+
+If we were using the more recent Illumina MethylationEPIC BeadChip,
+then we would load the `IlluminaHumanMethylationEPICanno.ilm10b2.hg19` package instead.
+
+We construct an annotation data frame as follows:
+```{r}
+data(list="IlluminaHumanMethylation450kanno.ilmn12.hg19")
+data(Locations)
+data(Other)
+annotation <- cbind(as.data.frame(Locations), as.data.frame(Other))
+```
+
+We then add the annotation to the `stats` object
+(**Warning**: we assume that the row names of the `stats` object
+are the Illumina CpG site identifiers, e.g. cg05775921).
+
+```{r}
+stats <- sapply(stats, function(stats) {
+    annotation <- annotation[match(rownames(stats), rownames(annotation)),]
+    cbind(stats, annotation)
+}, simplify=F)
+```
+
+## Construct 'pre' objects for DMR meta-analysis
+
+*Takes about 2 minutes per dataset to calculate CpG site correlations.*
+```{r}
+library(dmrff)
+pre <- sapply(accessions, function(acc) {
+    cat(date(), "pre", acc, "\n")
+    with(stats[[acc]], dmrff.pre(estimate, se, methylation[[acc]], chr, pos))
+}, simplify=F)
+```
+
+## Perform DMR meta-analysis
+
+*There are hundreds of DMRs for this phenotype,
+so the final meta-analysis takes about 15 minutes
+with a single processor.*
+```{r}
+options(mc.cores=20) ## if you have 20 processors available
+meta <- dmrff.meta(pre)
+```
+
+The output contains a data frame of the meta-analysed regions
+and the EWAS meta-analysis on which it was based.
+
+```{r}
+kable(meta$dmrs[1:2,])
+```
+
+```{r}
+kable(meta$ewas[1:2,])
+```
+
+Here we add the CpG sites and gene names to the EWAS sites:
+```{r}
+idx <- match(with(meta$ewas, paste(chr,pos)),
+             with(annotation, paste(chr,pos)))
+meta$ewas$cpg <- rownames(annotation)[idx]
+meta$ewas$gene <- annotation$UCSC_RefGene_Name[idx]
+```
+
+## Meta-analyzed DMRs
+
+```{r}
+dmrs <- meta$dmrs[which(meta$dmrs$p.adjust < 0.05 & meta$dmrs$n >= 2), ]
+```
+
+We've identified `r nrow(dmrs)` DMRs with Bonferroni adjusted p < 0.05.
+
+For convenience, we'll just look at DMRs on chromosome 6 with at least 5 CpG sites.
+```{r}
+dmrs6 <- meta$dmrs[which(meta$dmrs$p.adjust < 0.05
+                         & meta$dmrs$n >= 5
+                         & meta$dmrs$chr == "chr6"), ]
+dmrs6 <- dmrs6[order(dmrs6$start),]
+kable(dmrs6[,c("chr","start","end","n","estimate","se","p.value","p.adjust")])
+```
+
+Below we use the `dmrff.sites` function to show the CpG sites in each DMR and their
+meta-analysed summary statistics. 
+```{r}
+sites <- dmrff.sites(dmrs6, meta$ewas$chr, meta$ewas$pos)
+sites <- cbind(sites[,c("region","chr","pos")],
+               meta$ewas[sites$site,c("cpg", "estimate","se","p.value")])
+kable(sites,row.names=F)
+```
+
+We can use the same function to show the summary statistics for these sites
+from one of the original studies.
+```{r}
+acc <- "GSE79056"
+sites <- dmrff.sites(dmrs6, stats[[acc]]$chr, stats[[acc]]$pos)
+sites <- cbind(sites[,c("region","chr","pos")],
+               stats[[acc]][sites$site,c("estimate","se","p.value")])
+kable(sites,row.names=F)
+```
+
+Going back to full set of DMRs,
+we can ask which regions are novel,
+i.e. contain no CpG sites identified by Bohlin et al. 
+```{r}
+## consider only autosomal regions
+dmrs <- dmrs[which(dmrs$chr %in% paste0("chr", 1:22)),]
+## collect CpG sites in the regions
+sites <- dmrff.sites(dmrs, meta$ewas$chr, meta$ewas$pos)
+sites <- cbind(sites, meta$ewas[sites$site,c("cpg","estimate","se","p.value")])
+## identify sites with associations according to Bohlin et al.
+sites$bohlin <- sites$cpg %in% rownames(bohlin)
+## novel regions do not contain any of the Bohlin sites
+dmrs$novel <- !(1:nrow(dmrs) %in% sites$region[sites$bohlin])
+```
+
+Of `r nrow(dmrs)` DMRs identified, 
+`r round(100*sum(dmrs$novel)/nrow(dmrs),2)`%
+are novel.
+
+They appear on the following chromosomes:
+```{r}
+freq.novel <- table(dmrs$chr[dmrs$novel])
+freq <- table(dmrs$chr)
+prop <- 100*freq.novel/freq
+prop <- as.data.frame(prop)
+colnames(prop) <- c("chr","pct")
+prop$novel <- freq.novel
+prop$total <- freq
+prop <- prop[order(prop$pct),]
+kable(prop,row.names=F,digits=2)
+```
+
+
+

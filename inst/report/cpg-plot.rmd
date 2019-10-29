@@ -1,4 +1,0 @@
-
-```{r,message=F}
-object$cpg.plots[[cpg]]
-```

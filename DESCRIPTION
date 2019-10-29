@@ -1,5 +1,5 @@
 Package: dmrff
-Version: 0.0.2
+Version: 1.0.0
 Title: Identifying differentially methylated regions efficiently with power and control
 Description: An algorithm for identifying differentially methylated regions.
 Authors@R: c(person("Matthew", "Suderman", role = c("cre", "aut"),

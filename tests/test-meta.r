@@ -7,7 +7,6 @@ library(parallel)
 options(mc.cores=4)
 
 source("functions.r")
-source("bumphunter.r") ## just for the data simulation
 
 ## generate datasets
 set.seed(20180220)
@@ -35,25 +34,20 @@ for (i in 1:length(datasets)) {
     })
 }
                            
-## identify DMRs (there should be one)
+## identify DMRs (there should be at least one)
 ret <- dmrff.meta(lapply(datasets, function(dataset) dataset$pre),
                   maxgap=500, p.cutoff=0.05, verbose=T)
-ret$dmrs[which(ret$dmrs$p.adjust < 0.05), ]
-## > ret$dmrs[which(ret$dmrs$p.adjust < 0.05), ]
-##   chr start  end n start.idx end.idx start.orig end.orig   z.orig       p.orig
-## 1   1  6485 6627 2        31      32         28       38 4.652635 3.277197e-06
-## 2   1  6452 6452 1        30      30         28       38 4.652635 3.277197e-06
-## 3   1  6280 6280 1        29      29         28       38 4.652635 3.277197e-06
-## 5   1  6683 7044 3        34      36         28       38 4.652635 3.277197e-06
-## 6   1  6630 6630 1        33      33         28       38 4.652635 3.277197e-06
-## 7   1  7133 7602 2        37      38         28       38 4.652635 3.277197e-06
-##           z      p.value     p.adjust
-## 1 11.159733 6.418373e-29 7.432475e-26
-## 2  9.292509 1.506934e-20 1.745029e-17
-## 3  6.173627 6.674092e-10 7.728598e-07
-## 5 10.323678 5.507193e-25 6.377329e-22
-## 6 10.295473 7.385555e-25 8.552473e-22
-## 7  4.862225 1.160736e-06 1.344133e-03
+
+ret$dmrs[which(ret$dmrs$p.adjust < 0.05 & ret$dmrs$n > 1), ]
+## 1   1  6485 6627 2 NA NA 0.0056260963 5.041425e-04 11.159733 6.418373e-29
+## 5   1  6683 7044 3 NA NA 0.0027467860 2.660666e-04 10.323678 5.507193e-25
+## 7   1  7133 7602 2 NA NA 0.0003493481 7.264492e-05  4.808982 1.517008e-06
+##       p.adjust
+## 1 7.432475e-26
+## 5 6.377329e-22
+## 7 1.756695e-03
+
+
 
 ret$ewas$p.adjust <- p.adjust(ret$ewas$p.value, "bonferroni")
 ret$ewas[with(ret$ewas, min(which(p.adjust < 0.05)):max(which(p.adjust < 0.05))),]
@@ -67,8 +61,44 @@ ret$ewas[with(ret$ewas, min(which(p.adjust < 0.05)):max(which(p.adjust < 0.05)))
 ## 35 0.003438597 0.0005115889  6.721408 1.799771e-11   1 6991 1.799771e-08
 ## 36 0.003072825 0.0004192734  7.328930 2.319973e-13   1 7044 2.319973e-10
 
-########################### check meta-analysis
-########################### by calculating everything 'by hand'
+
+##########################
+## verify that meta-analysis gives the same results if
+## inputs are not sorted by chromosomal position
+udatasets <- lapply(datasets, function(dataset) {
+    idx <- sample(1:nrow(manifest), nrow(manifest), replace=F)
+    dataset <- list(data=dataset$data,
+                    methylation=dataset$methylation[idx,],
+                    manifest=manifest[idx,])
+    dataset$ewas <- with(dataset, ewas(methylation, data, "variable"))
+    dataset$pre <- with(dataset, dmrff.pre(estimate=ewas$estimate, se=ewas$se,
+                                           methylation=methylation,
+                                           chr=manifest$chr,
+                                           pos=manifest$pos))
+    dataset
+})
+                           
+## identify DMRs 
+uret <- dmrff.meta(lapply(udatasets, function(dataset) dataset$pre),
+                  maxgap=500, p.cutoff=0.05, verbose=T)
+
+uret$dmrs[which(uret$dmrs$p.adjust < 0.05 & uret$dmrs$n > 1), ]
+##   chr start  end n  B  S     estimate           se         z      p.value
+## 1   1  6485 6627 2 NA NA 0.0056260963 5.041425e-04 11.159733 6.418373e-29
+## 5   1  6683 7044 3 NA NA 0.0027467860 2.660666e-04 10.323678 5.507193e-25
+## 7   1  7133 7602 2 NA NA 0.0003493481 7.264492e-05  4.808982 1.517008e-06
+##       p.adjust
+## 1 7.432475e-26
+## 5 6.377329e-22
+## 7 1.756695e-03
+
+stopifnot(all(sapply(colnames(ret$dmrs), function(col)
+                     identical(ret$dmrs[[col]], uret$dmrs[[col]]))))
+
+
+###########################
+## check meta-analysis
+## by calculating everything 'by hand'
 
 ## meta-analyse EWAS statistics
 library(metafor)
