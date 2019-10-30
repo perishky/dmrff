@@ -1,4 +1,4 @@
-impute.matrix <- function(x, FUN=function(x) rowMedians(x, na.rm=T)) {
+impute.matrix <- function(x, FUN=function(x) matrixStats::rowMedians(x, na.rm=T)) {
     ##idx <- which(is.na(x), arr.ind=T)
     ## the line above causes a 'long vectors not supported yet' error
     ## when x contains more elements the .Machine$integer.max
