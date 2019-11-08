@@ -42,20 +42,22 @@ ivwfe.stats <- function(coef, se, mat=NULL, rho=NULL) {
           S=sqrt(S2))
     }
 
+    return(ivwfe.stats0(coef, se, rho))
+    
     ## perform IVW with and without taking dependencies into account
-    basic <- ivwfe.stats0(coef, se, diag(1.05, nrow(rho), ncol(rho)))
-    withdeps <- ivwfe.stats0(coef, se, rho)
+    #basic <- ivwfe.stats0(coef, se, diag(1.05, nrow(rho), ncol(rho)))
+    #withdeps <- ivwfe.stats0(coef, se, rho)
     ## return the more conservative
-    z.basic <- abs(basic["B"]/basic["S"])
-    z.deps <- abs(abs(withdeps["B"]/withdeps["S"]))
-    if (is.nan(z.deps) | is.na(z.deps))
-        basic
-    else if (is.nan(z.basic) | is.na(z.basic))
-        withdeps
-    else if (z.basic < z.deps)
-        basic
-    else
-        withdeps
+    #z.basic <- abs(basic["B"]/basic["S"])
+    #z.deps <- abs(abs(withdeps["B"]/withdeps["S"]))
+    #if (is.nan(z.deps) | is.na(z.deps))
+    #    basic
+    #else if (is.nan(z.basic) | is.na(z.basic))
+    #    withdeps
+    #else if (z.basic < z.deps)
+    #    basic
+    #else
+    #    withdeps
 }
 
 ivwfe.getz <- function(coef, se, mat=NULL, rho=NULL) {
