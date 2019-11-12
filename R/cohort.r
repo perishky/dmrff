@@ -20,6 +20,9 @@ dmrff.cohort <- function(object, maxgap=500, p.cutoff=0.05, verbose=T) {
     if (!is.list(object)
         && all(c("estimate","se","chr","pos","sites","rho") %in% names(object)))
         stop("'object' was not created by dmrff.pre()")
+
+    if (!("sd" %in% names(object))) ## if pre from older version of dmrff
+        object$sd <- rep(1,length(object$se))
     
     idx <- order(object$chr, object$pos)
     sorted <- identical(idx, 1:length(idx))
@@ -29,7 +32,11 @@ dmrff.cohort <- function(object, maxgap=500, p.cutoff=0.05, verbose=T) {
         object$pos <- object$pos[idx]
         object$estimate <- as.numeric(object$estimate[idx])
         object$se <- as.numeric(object$se[idx])
+        object$sd <- as.numeric(object$sd[idx])        
     }
+    ## scale summary stats as if methylation was standarized
+    object$estimate <- object$estimate/object$sd
+    object$se <- object$se/object$sd
     object$p.value <- 2*pnorm(abs(object$estimate/object$se), lower.tail=F)
         
     candidates <- dmrff.candidates(estimate=object$estimate,
@@ -48,7 +55,7 @@ dmrff.cohort <- function(object, maxgap=500, p.cutoff=0.05, verbose=T) {
                                               rho=extract.rho(object$rho[idx,,drop=F]))
                                })
 
-    full <- do.call(rbind, mclapply(1:nrow(stats), function(i) {
+    full <- do.call(rbind, parallel::mclapply(1:nrow(stats), function(i) {
         idx <- stats$start.idx[i]:stats$end.idx[i]
         if (length(idx) > ncol(object$rho)) return(c(B=0,S=1)) 
         ivwfe.stats(object$estimate[idx], object$se[idx],

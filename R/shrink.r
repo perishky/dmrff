@@ -1,7 +1,7 @@
 shrink.candidates <- function(start.idx, end.idx, FUN, ...) {
     stopifnot(length(start.idx) == length(end.idx))
     stopifnot(all(start.idx <= end.idx))
-    do.call(rbind, mclapply(1:length(start.idx), function(i) {
+    do.call(rbind, parallel::mclapply(1:length(start.idx), function(i) {
         shrink.candidate(start.idx[i], end.idx[i], FUN, ...)
     }))    
 }

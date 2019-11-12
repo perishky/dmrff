@@ -1,5 +1,4 @@
 library(dmrff)
-library(parallel)
 
 options(mc.cores=4)
 
@@ -60,11 +59,10 @@ ret <- dmrff(ewas.stats$estimate, ewas.stats$se, ewas.stats$p.value,
 stopifnot(sum(ret$p.adjust < 0.05) == 1)
 
 ret[which(ret$p.adjust < 0.05),]
-##   chr start   end n start.idx end.idx start.orig end.orig   z.orig     p.orig
-## 1   1 63431 64019 5       318     322        318      325 2.322495 0.02020632
-##          z      p.value    p.adjust
-## 1 4.568012 4.923719e-06 0.005307769
-
+##   chr start   end n start.idx end.idx start.orig end.orig   z.orig       p.orig
+## 1   1 63431 64365 8       318     325        318      325 5.257738 1.458382e-07
+##            B         S   estimate        se        z      p.value     p.adjust
+## 1 0.05561161 0.0105771 0.05561161 0.0105771 5.257738 1.458382e-07 0.0001572136
 
 ## test unordered input
 idx <- sample(1:nrow(ewas.stats), size=nrow(ewas.stats), replace=F)
@@ -78,3 +76,7 @@ ret <- dmrff(ewas.stats$estimate[idx],
 stopifnot(sum(ret$p.adjust < 0.05) == 1)
 
 ret[which(ret$p.adjust < 0.05),]
+##   chr start   end n          B         S   estimate        se        z
+## 1   1 63431 64365 8 0.05561161 0.0105771 0.05561161 0.0105771 5.257738
+##        p.value     p.adjust
+## 1 1.458382e-07 0.0001572136

@@ -1,67 +1,37 @@
-## coef effect sizes from association tests of features
+## estimate effect sizes from association tests of features
 ## se standard errors of the coefficients
 ## mat input data matrix (features x samples)
-ivwfe.stats <- function(coef, se, mat=NULL, rho=NULL) {
-    ## From James Staley:
-    ##     Here is the link to Stephen Burgess’ paper we discussed on
-    ## Thursday last week:
-    ## http://onlinelibrary.wiley.com/doi/10.1002/sim.6835/full    
-    ##     I have taken a look at the maths and Stouffer’s test statistic
-    ## weighted by 1/SE is the same as IVW FE meta-analysis beta/SE. So, the
-    ## generalised linear model approach in Stephen’s paper which is based on
-    ## IVW FE meta-analysis would probably be very similar to your Stouffer’s
-    ## method corrected for correlated Z-statistics.    
-    ##     The test statistic would be: T = B/S ~ N(0,1)    
-    ## where B = (1^TΩ^-11)^-11^TΩ^-1β and S = sqrt((1^TΩ^-11)^-1) where β are
-    ## the effect estimates, Ω is the variance-covariance matrix of the CpGs
-    ## and 1 is a vector of 1’s the same length as the number of CpGs.
-
+ivwfe.stats <- function(estimate, se, mat=NULL, rho=NULL) {
+    ## http://onlinelibrary.wiley.com/doi/10.1002/sim.6835/full
+    ## calculate rho
     if (is.null(rho)) {
         stopifnot(!is.null(mat))
         rho <- ivwfe.rho(mat)        
-    }
-    ## The second diagonal matrix is the 'nudge' matrix to ensure matrix inversion
-
+    }    
     ## remove missing values
-    na <- is.na(coef) | is.na(se)
+    na <- is.na(estimate) | is.na(se)
     if (sum(na) > 0) {
-        if (sum(na) == length(coef))
+        if (sum(na) == length(estimate))
             return(c(B=NA, S=NA))
 
-        coef <- coef[!na]
+        estimate <- estimate[!na]
         se <- se[!na]
         rho <- rho[!na,!na,drop=F]
     }
-
-    ivwfe.stats0 <- function(coef, se, rho) {
+    ## calculate statistics
+    ivwfe.stats0 <- function(estimate, se, rho) {
         omega <- (se%*%t(se))*rho
         omega.inv <- solve(omega)
         one <- matrix(1,nrow=nrow(omega.inv), ncol=1)
         S2 <- 1/(t(one) %*% omega.inv %*% one)
-        c(B=S2 * (t(one) %*% omega.inv) %*% coef,
+        c(B=S2 * (t(one) %*% omega.inv) %*% estimate,
           S=sqrt(S2))
     }
-
-    return(ivwfe.stats0(coef, se, rho))
-    
-    ## perform IVW with and without taking dependencies into account
-    #basic <- ivwfe.stats0(coef, se, diag(1.05, nrow(rho), ncol(rho)))
-    #withdeps <- ivwfe.stats0(coef, se, rho)
-    ## return the more conservative
-    #z.basic <- abs(basic["B"]/basic["S"])
-    #z.deps <- abs(abs(withdeps["B"]/withdeps["S"]))
-    #if (is.nan(z.deps) | is.na(z.deps))
-    #    basic
-    #else if (is.nan(z.basic) | is.na(z.basic))
-    #    withdeps
-    #else if (z.basic < z.deps)
-    #    basic
-    #else
-    #    withdeps
+    return(ivwfe.stats0(estimate, se, rho))
 }
 
-ivwfe.getz <- function(coef, se, mat=NULL, rho=NULL) {
-    stats <- ivwfe.stats(coef, se, mat, rho)
+ivwfe.getz <- function(estimate, se, mat=NULL, rho=NULL) {
+    stats <- ivwfe.stats(estimate, se, mat, rho)
     as.vector(stats["B"]/stats["S"])
 }
 
@@ -69,6 +39,7 @@ ivwfe.getz <- function(coef, se, mat=NULL, rho=NULL) {
 
 ivwfe.rho <- function(mat) {
     mat <- t(mat)
+    ## correlation matrix + nudge (to ensure invertible)
     rho <- cor(mat, use="p") + diag(x=0.05,ncol(mat),ncol(mat))
 }
 

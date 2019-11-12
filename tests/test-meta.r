@@ -1,8 +1,4 @@
-## for (file in list.files("../R", ".r$", full.names=T))
-##     source(file)
-
 library(dmrff)
-library(parallel)
 
 options(mc.cores=4)
 
@@ -33,33 +29,36 @@ for (i in 1:length(datasets)) {
                   methylation=methylation, chr=manifest$chr, pos=manifest$pos)
     })
 }
-                           
+
+## make sure that 'sd' calculates correct
+stopifnot(all(abs(datasets[[1]]$pre$sd - apply(datasets[[1]]$methylation, 1, sd)) < 2e-16))
+
 ## identify DMRs (there should be at least one)
 ret <- dmrff.meta(lapply(datasets, function(dataset) dataset$pre),
                   maxgap=500, p.cutoff=0.05, verbose=T)
 
 ret$dmrs[which(ret$dmrs$p.adjust < 0.05 & ret$dmrs$n > 1), ]
-## 1   1  6485 6627 2 NA NA 0.0056260963 5.041425e-04 11.159733 6.418373e-29
-## 5   1  6683 7044 3 NA NA 0.0027467860 2.660666e-04 10.323678 5.507193e-25
-## 7   1  7133 7602 2 NA NA 0.0003493481 7.264492e-05  4.808982 1.517008e-06
+##   chr start  end n  B  S   estimate          se       z      p.value
+## 1   1  6452 7133 8 NA NA 0.05147351 0.003374736 15.2526 1.582028e-52
 ##       p.adjust
-## 1 7.432475e-26
-## 5 6.377329e-22
-## 7 1.756695e-03
+## 1 1.882614e-49
+
 
 
 
 ret$ewas$p.adjust <- p.adjust(ret$ewas$p.value, "bonferroni")
 ret$ewas[with(ret$ewas, min(which(p.adjust < 0.05)):max(which(p.adjust < 0.05))),]
-##       estimate           se         z      p.value chr  pos     p.adjust
-## 29 0.004265129 0.0006742131  6.326085 2.514591e-10   1 6280 2.514591e-07
-## 30 0.006215383 0.0006527400  9.521988 1.698969e-21   1 6452 1.698969e-18
-## 31 0.005596188 0.0005731201  9.764424 1.600180e-22   1 6485 1.600180e-19
-## 32 0.006125614 0.0006093820 10.052175 8.986206e-24   1 6627 8.986206e-21
-## 33 0.005464965 0.0005180199 10.549721 5.094832e-26   1 6630 5.094832e-23
-## 34 0.003130973 0.0003476549  9.005979 2.137506e-19   1 6683 2.137506e-16
-## 35 0.003438597 0.0005115889  6.721408 1.799771e-11   1 6991 1.799771e-08
-## 36 0.003072825 0.0004192734  7.328930 2.319973e-13   1 7044 2.319973e-10
+##      estimate          se         z      p.value chr  pos     p.adjust
+## 29 0.03495611 0.005587286  6.256366 3.940522e-10   1 6280 3.940522e-07
+## 30 0.05537181 0.005421784 10.212840 1.737056e-24   1 6452 1.737056e-21
+## 31 0.05636577 0.005410459 10.417928 2.053781e-25   1 6485 2.053781e-22
+## 32 0.05699328 0.005383369 10.586917 3.426934e-26   1 6627 3.426934e-23
+## 33 0.06032290 0.005354420 11.266001 1.931436e-29   1 6630 1.931436e-26
+## 34 0.06226195 0.005303403 11.740001 7.948510e-32   1 6683 7.948510e-29
+## 35 0.04192692 0.005571865  7.524755 5.281939e-14   1 6991 5.281939e-11
+## 36 0.04481686 0.005533165  8.099679 5.510442e-16   1 7044 5.510442e-13
+## 37 0.04274037 0.005563133  7.682788 1.556625e-14   1 7133 1.556625e-11
+## 38 0.02776729 0.005602469  4.956259 7.186349e-07   1 7602 7.186349e-04
 
 
 ##########################
@@ -83,14 +82,11 @@ uret <- dmrff.meta(lapply(udatasets, function(dataset) dataset$pre),
                   maxgap=500, p.cutoff=0.05, verbose=T)
 
 uret$dmrs[which(uret$dmrs$p.adjust < 0.05 & uret$dmrs$n > 1), ]
-##   chr start  end n  B  S     estimate           se         z      p.value
-## 1   1  6485 6627 2 NA NA 0.0056260963 5.041425e-04 11.159733 6.418373e-29
-## 5   1  6683 7044 3 NA NA 0.0027467860 2.660666e-04 10.323678 5.507193e-25
-## 7   1  7133 7602 2 NA NA 0.0003493481 7.264492e-05  4.808982 1.517008e-06
+##   chr start  end n  B  S   estimate          se       z      p.value
+## 1   1  6452 7133 8 NA NA 0.05147351 0.003374736 15.2526 1.582028e-52
 ##       p.adjust
-## 1 7.432475e-26
-## 5 6.377329e-22
-## 7 1.756695e-03
+## 1 1.882614e-49
+
 
 stopifnot(all(sapply(colnames(ret$dmrs), function(col)
                      identical(ret$dmrs[[col]], uret$dmrs[[col]]))))
@@ -100,12 +96,13 @@ stopifnot(all(sapply(colnames(ret$dmrs), function(col)
 ## check meta-analysis
 ## by calculating everything 'by hand'
 
+library(parallel)
 ## meta-analyse EWAS statistics
 library(metafor)
 ewas.ma.stats <- do.call(rbind, mclapply(1:n.sites, function(i) {
     tryCatch({
-        fit <- rma.uni(yi=sapply(datasets, function(dataset) dataset$pre$estimate[i]),
-                       sei=sapply(datasets, function(dataset) dataset$pre$se[i]),
+        fit <- rma.uni(yi=sapply(datasets, function(dataset) with(dataset$pre, estimate[i]/sd[i])),
+                       sei=sapply(datasets, function(dataset) with(dataset$pre, se[i]/sd[i])),
                        method="FE")
         c(estimate=unname(fit$b["intrcpt",1]),
           se=fit$se,
@@ -169,11 +166,11 @@ for (i in 1:nrow(dmr.ma.stats)) {
 }
 
 ## the same dmrs should be identified by both methods
-x <- dmr.ma.stats[which(dmr.ma.stats$best & dmr.ma.stats$p.adjust < 0.05),
-             c("chr","start","end","z")]
-y <- ret$dmrs[which(ret$dmrs$p.adjust < 0.05),
-               c("chr","start","end","z")]
-stopifnot(all(sort(apply(x, 1, paste)) == sort(apply(y, 1, paste))))
+cols <- c("chr","start","end")
+x <- dmr.ma.stats[which(dmr.ma.stats$best & dmr.ma.stats$p.adjust < 0.05),cols]
+y <- ret$dmrs[which(ret$dmrs$p.adjust < 0.05),cols]
+stopifnot(all(sort(apply(x, 1, paste))
+              == sort(apply(y, 1, paste))))
 
 ## z-scores for the same regions should be identical
 dmr.ma.stats <- dmr.ma.stats[match(with(ret$dmrs, paste(chr, start, end)),
@@ -198,9 +195,9 @@ dmrs2 <- dmrff.cohort(datasets[[1]]$pre)
 dmrs1$id <- with(dmrs1, paste(chr, start, end))
 dmrs2$id <- with(dmrs2, paste(chr, start, end))
 common.candidates <- intersect(dmrs1$id, dmrs2$id)
-length(common.candidates) ## 51
-nrow(dmrs1) ## 51
-nrow(dmrs2) ## 52
+length(common.candidates) ## 47
+nrow(dmrs1) ## 47
+nrow(dmrs2) ## 48
 dmrs1 <- dmrs1[match(common.candidates, dmrs1$id),]
 dmrs2 <- dmrs2[match(common.candidates, dmrs2$id),]
 stopifnot(cor(dmrs1$estimate, dmrs2$estimate) >= 0.99)

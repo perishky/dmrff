@@ -56,6 +56,12 @@ dmrff <- function(estimate, se, p.value, methylation, chr, pos,
         methylation <- methylation[idx,,drop=F]
     }
 
+
+    ## scale summary stats as if methylation was standarized
+    methylation.sd <- row.sds(methylation,na.rm=T)
+    estimate <- estimate/methylation.sd
+    se <- se/methylation.sd
+    
     # identify candidate regions
     candidates <- dmrff.candidates(estimate=estimate,
                                    p.value=p.value,
@@ -73,7 +79,7 @@ dmrff <- function(estimate, se, p.value, methylation, chr, pos,
                                })
 
     # calculate B and S statistics for each region (recall z=B/S)
-    full <- do.call(rbind, mclapply(1:nrow(stats), function(i) {
+    full <- do.call(rbind, parallel::mclapply(1:nrow(stats), function(i) {
         idx <- stats$start.idx[i]:stats$end.idx[i]
         ivwfe.stats(estimate[idx], se[idx], methylation[idx,,drop=F])
     }))

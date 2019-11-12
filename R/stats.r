@@ -26,9 +26,16 @@ dmrff.stats <- function(regions, estimate, se, methylation, chr, pos, verbose=T)
     stopifnot(length(estimate) == length(chr))
     stopifnot(length(estimate) == length(pos))
 
+    ## identify CpG sites in each region
     members <- region.members(regions, data.frame(chr=chr, pos=pos))
 
-    stats <- do.call(rbind, mclapply(members, function(idx) {
+    ## scale summary stats as if methylation was standarized
+    methylation.sd <- row.sds(methylation,na.rm=T)
+    estimate <- estimate/methylation.sd
+    se <- se/methylation.sd
+
+    ## calculate region statistics
+    stats <- do.call(rbind, parallel::mclapply(members, function(idx) {
         idx <- na.omit(idx)
         if (length(idx) == 0) return(c(B=NA,S=NA))
         ivwfe.stats(estimate[idx], se[idx], methylation[idx,,drop=F])

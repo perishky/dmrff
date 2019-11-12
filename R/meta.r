@@ -28,6 +28,9 @@ dmrff.meta <- function(objects, maxgap=500, p.cutoff=0.05, verbose=T) {
         if (!is.list(objects[[i]])
             && all(c("estimate","se","chr","pos","sites","rho") %in% names(objects[[i]])))
             stop("object ", i, " was not created by dmrff.pre()")
+
+        if (!("sd" %in% names(objects[[i]]))) ## if pre from older version of dmrff
+            objects[[i]]$sd <- rep(1,length(objects[[i]]$se))
         
         idx <- order(objects[[i]]$chr, objects[[i]]$pos)
         sorted <- identical(idx, 1:length(idx))
@@ -37,7 +40,11 @@ dmrff.meta <- function(objects, maxgap=500, p.cutoff=0.05, verbose=T) {
             objects[[i]]$pos <- objects[[i]]$pos[idx]
             objects[[i]]$estimate <- as.numeric(objects[[i]]$estimate[idx])
             objects[[i]]$se <- as.numeric(objects[[i]]$se[idx])
+            objects[[i]]$sd <- as.numeric(objects[[i]]$sd[idx])
         }
+        ## scale summary stats as if methylation was standarized
+        objects[[i]]$estimate <- objects[[i]]$estimate/objects[[i]]$sd
+        objects[[i]]$se <- objects[[i]]$se/objects[[i]]$sd
     }
     
     ## identify a set of CpG sites in every dataset
@@ -84,7 +91,7 @@ dmrff.meta <- function(objects, maxgap=500, p.cutoff=0.05, verbose=T) {
                                candidates$end.idx,
                                compute.dmr.z)
 
-    full <- do.call(rbind, mclapply(1:nrow(stats), function(i) {
+    full <- do.call(rbind, parallel::mclapply(1:nrow(stats), function(i) {
         compute.dmr.stats(stats$start.idx[i], stats$end.idx[i])
     }))
 
