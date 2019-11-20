@@ -20,12 +20,16 @@ ivwfe.stats <- function(estimate, se, mat=NULL, rho=NULL) {
     }
     ## calculate statistics
     ivwfe.stats0 <- function(estimate, se, rho) {
-        omega <- (se%*%t(se))*rho
-        omega.inv <- solve(omega)
-        one <- matrix(1,nrow=nrow(omega.inv), ncol=1)
-        S2 <- 1/(t(one) %*% omega.inv %*% one)
-        c(B=S2 * (t(one) %*% omega.inv) %*% estimate,
-          S=sqrt(S2))
+        tryCatch({
+            omega <- (se%*%t(se))*rho
+            omega.inv <- solve(omega)
+            one <- matrix(1,nrow=nrow(omega.inv), ncol=1)
+            S2 <- 1/(t(one) %*% omega.inv %*% one)
+            c(B=S2 * (t(one) %*% omega.inv) %*% estimate,
+              S=sqrt(S2))
+        }, error=function(e) {
+            c(B=NA,S=NA)
+        })
     }
     return(ivwfe.stats0(estimate, se, rho))
 }
