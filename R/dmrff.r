@@ -114,3 +114,5 @@ collate.stats <- function(stats, chr, pos, simple=F) {
         stats$start.idx <- stats$end.idx <- stats$start.orig <- stats$end.orig <- stats$z.orig <- stats$p.orig <- NULL
     stats
 }
+
+

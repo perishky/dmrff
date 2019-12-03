@@ -9,7 +9,8 @@ Author: Matthew Suderman <matthewsuderman@hotmail.com> [cre, aut],
     James Staley [cre, aut]
 Maintainer: Matthew Suderman <matthewsuderman@hotmail.com>
 Imports:
-    parallel
+    parallel,
+    ggplot2
 License: Artistic-2.0
 URL: 
 LazyData: yes
