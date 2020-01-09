@@ -25,3 +25,6 @@ showing how to apply *dmrff* to a publicly available dataset can be found in the
 
 A more extended example shows how to use *dmrff* to 
 [meta-analyze multiple datasets](http://htmlpreview.github.io/?https://github.com/perishky/dmrff/blob/master/docs/meta-analysis.html).
+
+A simulated example illustrates how
+[dependencies between CpG sites affect DMR statistics](http://htmlpreview.github.io/?https://github.com/perishky/dmrff/blob/master/docs/correlated-cpg-sites.html).

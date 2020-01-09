@@ -1,0 +1,197 @@
+## dmrff and CpG site correlation
+
+Here is common question about `dmrff`:
+> My EWAS identifies several regions filled with
+> CpG sites all weakly associated with my variable of interest.
+> Why does dmrff identify some but not all of them
+> as differentially methylated regions?
+
+The short answer is that the regions that fail the dmrff
+test will tend to have CpG sites that are more dependent on one
+another, particularly in how they relate to the variable interest.
+In other words, the association of a CpG site with the variable
+will tend to disappear when one more more other CpG sites are included
+in the model.
+As a result, the region as a whole will not explain much more variation than is
+explained by any individual CpG site.
+The regions that pass the dmrff test will tend to
+be composed of CpG sites that each explain a somewhat different
+proportion of the variability of the variable of interest.
+As a result, the region as a whole will explain more variation
+than any individual CpG site.
+
+The simulations below illustrates this behavior.
+ 
+### Generate a dataset with a differentially methylated region of interdependent CpG sites
+We'll be generating some random data,
+so set the random seed so the output
+is reproducible.
+```{r}
+set.seed(20200109)
+```
+
+Start with a completely random DNA methylation dataset.
+```{r}
+meth <- t(sapply(1:1000,function(i) runif(100)))
+rownames(meth) <- paste("cg", 1:nrow(meth), sep="")
+colnames(meth) <- paste("s", 1:ncol(meth), sep="")
+sites <- data.frame(chr=chr <- rep("chr1", nrow(meth)),
+                    pos=seq(1,nrow(meth)*50, 50),
+                    stringsAsFactors=F)
+rownames(sites) <- rownames(meth)
+```
+
+Insert a differentially methylated region
+into the dataset composed of highly correlated CpG sites 
+that are weakly correlated with the variable of interest.
+
+The region is composed of 5 CpG sites.
+```{r}
+region <- paste("cg", 501:505, sep="")
+region.chr <- sites[region[1],"chr"]
+region.start <- min(sites[region,"pos"])
+region.end <- max(sites[region,"pos"])
+```
+
+The following function can be used to generate a variable
+of interest and methylation levels for a requested number of CpG sites
+with a given correlation structure.
+```{r}
+library(MASS)
+generate.random.data <- function(var.r, sites.r, n.samples, n.sites) {
+    sigma <- sites.r + matrix(rnorm((n.sites+1)^2, sd=0.02), ncol=n.sites+1)
+    sigma[1,] <- var.r + rnorm(ncol(sigma), sd=0.02)
+    sigma[,1] <- var.r + rnorm(nrow(sigma), sd=0.02)
+    diag(sigma) <- 1
+    random.vars <- mvrnorm(n=n.samples, mu=rep(0,ncol(sigma)), Sigma=sigma, empirical=TRUE)
+    list(var=random.vars[,1],
+         meth=t(random.vars[,-1]))
+}
+```
+
+CpG sites will have correlation of about R=0.95 between them
+and a correlation of R=0.3 with the variable of interest.
+```{r}
+random.data <- generate.random.data(0.3, 0.95, ncol(meth), length(region))
+var <- random.data$var
+meth[region,] <- random.data$meth
+```
+
+The correlations between sites are indeed 0.95.
+```{r, eval=F}
+cor(t(meth[region,]))
+```
+```{r,echo=F}
+kable(cor(t(meth[region,])), digits=3)
+```
+
+The correlations between the sites and the variable of interest are 0.3.
+```{r, eval=F}
+t(sapply(region, function(site) cor(meth[site,],var)))
+```
+```{r,echo=F}
+kable(t(sapply(region, function(site) cor(meth[site,],var))), digits=3)
+```
+
+### Perform an EWAS
+```{r}
+stats <- t(sapply(rownames(meth), function(site) coef(summary(lm(meth[site,] ~ var)))["var",]))
+stats <- as.data.frame(stats)
+colnames(stats) <- c("estimate","se","t","p.value")
+```
+
+As expected,
+the CpG sites are all similarly associated with the variable of interest.
+```{r,eval=F}
+stats[region,]
+```
+```{r,echo=F}
+kable(stats[region,])
+```
+
+### Apply dmrff
+```{r}
+library(dmrff, quietly=T)
+dmrs <- dmrff(stats$estimate, stats$se, stats$p.value, meth, sites$chr, sites$pos)
+```
+
+The following function checks if two regions overlap.
+It will be used to identify any regions tested by dmrff
+that overlap with the simulated differentially methylated region.
+```{r}
+overlaps  <- function(chr1,s1,e1,chr2,s2,e2) {
+    chr1 == chr2 & (s1 >= s2 & s1 <= e2
+        | e1 >= s2 & e1 <= e2
+        | s2 >= s1 & s2 <= e1
+        | e2 >= s1 & e2 <= e1)
+}
+```
+
+Notice how the p-value for any region considered is quite similar to
+EWAS p-values for the individual CpG sites in the region.
+This is because the CpG sites all explain a similar portion
+of the variability of the variable of interest.
+```{r}
+overlaps.region <- sapply(1:nrow(dmrs), function(i) {
+    overlaps(dmrs$chr[i], dmrs$start[i], dmrs$end[i],
+             region.chr, region.start, region.end)
+})
+dmrs[overlaps.region,c("chr","start","end","n","estimate","se","p.value","p.adjust")]
+```
+
+### Modify the region to make the CpG sites more independent
+Replace the methylation levels of the CpG sites in the region
+so that each CpG site is weakly associated with the
+variable of interest but mostly independent of one another.
+```{r}
+random.data <- generate.random.data(0.3, 0.1, ncol(meth), length(region))
+var <- random.data$var
+meth[region,] <- random.data$meth
+```
+
+As before, the correlations between the sites and the variable of interest are roughly 0.3.
+```{r,eval=F}
+t(sapply(region, function(site) cor(meth[site,],var)))
+```
+```{r,echo=F}
+kable(t(sapply(region, function(site) cor(meth[site,],var))), digits=3)
+```
+
+However, the correlations between the CpG sites are quite low.
+```{r, eval=F}
+cor(t(meth[region,]))
+```
+```{r,echo=F}
+kable(cor(t(meth[region,])), digits=3)
+```
+
+### Repeat the EWAS and dmrff analyses
+
+Repeat the EWAS and DMR analyses with the new dataset.
+```{r}
+stats <- t(sapply(rownames(meth), function(site) coef(summary(lm(meth[site,] ~ var)))["var",]))
+stats <- as.data.frame(stats)
+colnames(stats) <- c("estimate","se","t","p.value")
+dmrs <- dmrff(stats$estimate, stats$se, stats$p.value, meth, sites$chr, sites$pos)
+```
+
+As before,
+the CpG sites are all similarly associated with the variable of interest.
+```{r,eval=F}
+stats[region,]
+```
+```{r,echo=F}
+kable(stats[region,])
+```
+
+The p-value for the region is much lower than previously.
+This is because the CpG sites are independently associated with the
+variable of interest so, combined, they explain much more variation than
+any single CpG site.
+```{r}
+overlaps.region <- sapply(1:nrow(dmrs), function(i) {
+    overlaps(dmrs$chr[i], dmrs$start[i], dmrs$end[i],
+             region.chr, region.start, region.end)
+})
+dmrs[overlaps.region,c("chr","start","end","n","estimate","se","p.value","p.adjust")]
+```
