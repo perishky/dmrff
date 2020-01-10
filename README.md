@@ -28,3 +28,6 @@ A more extended example shows how to use *dmrff* to
 
 A simulated example illustrates how
 [dependencies between CpG sites affect DMR statistics](http://htmlpreview.github.io/?https://github.com/perishky/dmrff/blob/master/docs/correlated-cpg-sites.html).
+
+A [wiki](https://github.com/perishky/dmrff/wiki) is being developed and includes answers to 
+some [frequently asked questions](https://github.com/perishky/dmrff/wiki).
