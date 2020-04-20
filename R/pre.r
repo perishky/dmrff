@@ -42,7 +42,7 @@ dmrff.pre <- function(estimate, se, methylation, chr, pos, maxsize=20, verbose=T
     rho <- do.call(cbind, parallel::mclapply(1:maxsize, function(size) {
         sapply(1:length(chr), function(i) {
             if (i + size <= length(idx)) {
-                numer <- sum(m[i,] * m[i+size,])
+                numer <- sum(m[i,] * m[i+size,], na.rm=T)
                 denom <- ss[i] * ss[i+size]
                 numer/denom
             }
