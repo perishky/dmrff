@@ -70,6 +70,10 @@ dmrff.meta <- function(objects, maxgap=500, p.cutoff=0.05, verbose=T) {
                                    maxgap=maxgap, p.cutoff=p.cutoff,
                                    verbose=verbose)
 
+    if (is.null(candidates)) {
+        return(list(ewas=ma, dmrs=NULL))
+    }
+    
     ## shrink candidate regions and meta-analyze statistics
     compute.dmr.stats <- function(start.idx,end.idx) {
         stats <- sapply(1:length(objects), function(i) {

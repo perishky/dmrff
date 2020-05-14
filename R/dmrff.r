@@ -71,6 +71,10 @@ dmrff <- function(estimate, se, p.value, methylation, chr, pos,
                                    p.cutoff=p.cutoff,
                                    verbose=verbose)
 
+    if (is.null(candidates)) {
+        return (NULL)
+    }
+
     # identify sub-regions that maximize statistical significance
     stats <- shrink.candidates(candidates$start.idx, candidates$end.idx,
                                function(start.idx,end.idx) {

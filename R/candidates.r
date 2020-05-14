@@ -53,11 +53,11 @@ dmrff.candidates <- function(estimate, p.value, chr, pos,
     
     if (verbose)
         msg("Found ", nrow(candidates), " candidate regions.")
-    
+
     candidates$start.idx <- sig.idx[candidates$indexStart]
     candidates$end.idx <- sig.idx[candidates$indexEnd]
     candidates$candidate <- 1:nrow(candidates)
-
+    
     if (sorted) 
         candidates[,c("chr","start","end","candidate","start.idx","end.idx")]
     else

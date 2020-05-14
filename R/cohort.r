@@ -46,6 +46,9 @@ dmrff.cohort <- function(object, maxgap=500, p.cutoff=0.05, verbose=T) {
                                    maxgap=maxgap,
                                    p.cutoff=p.cutoff,
                                    verbose=verbose)
+    if (nrow(candidates) == 0) {
+        return(NULL)
+    }
  
     stats <- shrink.candidates(candidates$start.idx, candidates$end.idx,
                                function(start.idx,end.idx) {
