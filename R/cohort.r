@@ -54,6 +54,10 @@ dmrff.cohort <- function(object, maxgap=500, p.cutoff=0.05, verbose=T) {
                                function(start.idx,end.idx) {
                                    idx <- start.idx:end.idx
                                    if (length(idx) > ncol(object$rho)) return(0) 
+                                   ## if none of the CpG site associations in the region
+                                   ## have p < p.cutoff, then skip the region
+                                   if (all(object$p.value[idx] > p.cutoff, na.rm=T)) return(0)
+                                   ## otherwise calculate the z-score                                  
                                    ivwfe.getz(object$estimate[idx], object$se[idx],
                                               rho=extract.rho(object$rho[idx,,drop=F]))
                                })

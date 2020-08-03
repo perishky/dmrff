@@ -78,7 +78,11 @@ dmrff <- function(estimate, se, p.value, methylation, chr, pos,
     # identify sub-regions that maximize statistical significance
     stats <- shrink.candidates(candidates$start.idx, candidates$end.idx,
                                function(start.idx,end.idx) {
+                                   ## if none of the CpG site associations in the region
+                                   ## have p < p.cutoff, then skip the region
                                    idx <- start.idx:end.idx
+                                   if (all(p.value[idx] > p.cutoff, na.rm=T)) return(0)
+                                   ## otherwise calculate the z-score
                                    ivwfe.getz(estimate[idx], se[idx], methylation[idx,,drop=F])
                                })
 

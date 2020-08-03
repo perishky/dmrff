@@ -89,6 +89,11 @@ dmrff.meta <- function(objects, maxgap=500, p.cutoff=0.05, verbose=T) {
         ivwfe.ma(stats["B",,drop=F], stats["S",,drop=F])
     }
     compute.dmr.z <- function(start.idx,end.idx) {
+        idx <- start.idx:end.idx
+        ## if none of meta-analysed CpG site associations in the region
+        ## have p < p.cutoff, then skip the region
+        if (all(ma$p.value[idx] > p.cutoff, na.rm=T)) return(0)
+        ## otherwise calculate a z-score
         compute.dmr.stats(start.idx, end.idx)$z
     }
     stats <- shrink.candidates(candidates$start.idx,
