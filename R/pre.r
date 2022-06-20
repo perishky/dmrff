@@ -23,6 +23,7 @@ dmrff.pre <- function(estimate, se, methylation, chr, pos, maxsize=20, verbose=T
     stopifnot(length(estimate) == nrow(methylation))
     stopifnot(length(estimate) == length(chr))
     stopifnot(length(estimate) == length(pos))
+    stopifnot(all(!is.na(chr)))
     
     # sort input by chromosomal position
     idx <- order(chr,pos)
