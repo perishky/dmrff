@@ -12,12 +12,12 @@ shrink.candidate <- function(start.idx, end.idx, FUN, ...) {
     for (i in 1:n) 
         for (j in i:n) 
             z[i,j] <- FUN(start.idx + i - 1, start.idx + j - 1, ...)
-
+    
     shrink.fun <- function(z, start, end) {
         idx <- start:end
         max.idx <- which(abs(z[idx,idx,drop=F]) >= max(abs(z[idx,idx]), na.rm=T), arr.ind=T)
         if (length(max.idx) == 0) {
-            return(NULL)
+            return(cbind(start.idx=start,end.idx=end))
         }
         best.start <- idx[max.idx[1,1]]
         best.end <- idx[max.idx[1,2]]
