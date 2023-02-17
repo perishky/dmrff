@@ -30,12 +30,17 @@ shrink.candidate <- function(start.idx, end.idx, FUN, ...) {
     }
 
     ret <- shrink.fun(z, 1, n)
-    data.frame(start.idx=start.idx + ret[,1] - 1,
-               end.idx=start.idx + ret[,2] - 1,
-               z=z[ret],
-               start.orig=start.idx,
-               end.orig=end.idx,
-               z.orig=z[1,n])
+    tryCatch({
+        data.frame(start.idx=start.idx + ret[,1] - 1,
+                end.idx=start.idx + ret[,2] - 1,
+                z=z[ret],
+                start.orig=start.idx,
+                end.orig=end.idx,
+                z.orig=z[1,n])
+    }, error=function(e) {
+        save(z,n,start.idx,end.idx,ret,file="shrink-error-20230217.rda")
+        stop(e)
+    })
 }
 
 calculate.number.shrink.tests <- function(stats) {
