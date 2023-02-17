@@ -38,8 +38,9 @@ shrink.candidate <- function(start.idx, end.idx, FUN, ...) {
                 end.orig=end.idx,
                 z.orig=z[1,n])
     }, error=function(e) {
+        print(e)
         save(z,n,start.idx,end.idx,ret,file="shrink-error-20230217.rda")
-        stop(e)
+        stop("Saved variables for debugging to 'shrink-error-20230217.rda'")
     })
 }
 
