@@ -36,7 +36,7 @@ for (i in 1:nrow(stats)) {
         ret <- dmrff(
             ewas.stats$estimate, ewas.stats$se, ewas.stats$p.value,
             dataset$methylation,
-            manifest$chr, manifest$pos, minmem=F)
+            manifest$chr, manifest$pos, minmem=T)
     })
     stats$coverage[i] <- sum(ret$end.idx-ret$start.idx+1)
     stats$peak[i] <- mem$Peak_RAM_Used_MiB
