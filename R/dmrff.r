@@ -29,7 +29,7 @@
 #'
 #' @export
 dmrff <- function(estimate, se, p.value, methylation, chr, pos,
-                  maxgap=500, p.cutoff=0.05, verbose=T,debug=F) {
+                  maxgap=500, p.cutoff=0.05, minmem=F, verbose=T,debug=F) {
     stopifnot(is.vector(estimate))
     stopifnot(is.vector(se))
     stopifnot(is.vector(p.value))
@@ -56,32 +56,50 @@ dmrff <- function(estimate, se, p.value, methylation, chr, pos,
         methylation <- methylation[idx,,drop=F]
     }
 
-
-    ## scale summary stats as if methylation was standarized
-    methylation.sd <- row.sds(methylation,na.rm=T)
-    estimate <- estimate/methylation.sd
-    se <- se/methylation.sd
-    
     # identify candidate regions
-    candidates <- dmrff.candidates(estimate=estimate,
-                                   p.value=p.value,
-                                   chr=chr, 
-                                   pos=pos,
-                                   maxgap=maxgap,
-                                   p.cutoff=p.cutoff,
-                                   verbose=verbose)
+    candidates <- dmrff.candidates(
+        estimate=estimate,
+        p.value=p.value,
+        chr=chr, 
+        pos=pos,
+        maxgap=maxgap,
+        p.cutoff=p.cutoff,
+        verbose=verbose)
 
     if (is.null(candidates)) {
         return (NULL)
     }
 
+    ## reduce dataset to just cover the candidates
+    if (minmem) {
+        red.end.idx <- cumsum(candidates$end.idx-candidates$start.idx+1)
+        red.start.idx <- c(1,head(red.end.idx,-1)+1)
+        red.idx <- unlist(lapply(1:nrow(candidates), function(i) {
+            with(candidates, start.idx[i]:end.idx[i])
+        }))
+        estimate <- estimate[red.idx]
+        se <- se[red.idx]
+        methylation <- methylation[red.idx,,drop=F]
+        gc()
+    } else {
+        red.idx <- 1:nrow(methylation)
+        red.end.idx <- candidates$end.idx
+        red.start.idx <- candidates$start.idx
+    }
+    
+    ## scale summary stats as if methylation was standarized
+    methylation.sd <- row.sds(methylation,na.rm=T)
+    estimate <- estimate/methylation.sd
+    se <- se/methylation.sd
+    
     # identify sub-regions that maximize statistical significance
-    stats <- shrink.candidates(candidates$start.idx, candidates$end.idx,
-                               function(start.idx,end.idx) {
-                                   idx <- start.idx:end.idx
-                                   ivwfe.getz(estimate[idx], se[idx], methylation[idx,,drop=F])
-                               })
-
+    stats <- shrink.candidates(
+        red.start.idx, red.end.idx,
+        function(start.idx,end.idx) {
+            idx <- start.idx:end.idx
+            ivwfe.getz(estimate[idx], se[idx], methylation[idx,,drop=F])
+        })
+    
     # calculate B and S statistics for each region (recall z=B/S)
     full <- do.call(rbind, parallel::mclapply(1:nrow(stats), function(i) {
         idx <- stats$start.idx[i]:stats$end.idx[i]
@@ -90,28 +108,35 @@ dmrff <- function(estimate, se, p.value, methylation, chr, pos,
 
     stats$estimate <- stats$B <- full[,"B"]
     stats$se <- stats$S <- full[,"S"]
-
+    stats$start.idx <- red.idx[stats$start.idx]
+    stats$end.idx <- red.idx[stats$end.idx]
+    stats$start.orig <- red.idx[stats$start.orig]
+    stats$end.orig <- red.idx[stats$end.orig]
+    
     collate.stats(stats, chr, pos, simple=!sorted)
 }
 
 
 collate.stats <- function(stats, chr, pos, simple=F) {   
-    stats <- with(stats, data.frame(chr=chr[start.idx],
-                                    start=pos[start.idx],
-                                    end=pos[end.idx],
-                                    n=end.idx-start.idx+1,
-                                    start.idx=start.idx,
-                                    end.idx=end.idx,
-                                    start.orig=start.orig,
-                                    end.orig=end.orig,
-                                    z.orig=z.orig,
-                                    p.orig=2*pnorm(-abs(z.orig), lower.tail=T),
-                                    B=B,
-                                    S=S,
-                                    estimate=estimate,
-                                    se=se,
-                                    z=z,
-                                    p.value=2*pnorm(-abs(z), lower.tail=T)))
+    stats <- with(stats, {
+        data.frame(
+            chr=chr[start.idx],
+            start=pos[start.idx],
+            end=pos[end.idx],
+            n=end.idx-start.idx+1,
+            start.idx=start.idx,
+            end.idx=end.idx,
+            start.orig=start.orig,
+            end.orig=end.orig,
+            z.orig=z.orig,
+            p.orig=2*pnorm(-abs(z.orig), lower.tail=T),
+            B=B,
+            S=S,
+            estimate=estimate,
+            se=se,
+            z=z,
+            p.value=2*pnorm(-abs(z), lower.tail=T))
+    })
     number.tests <- length(chr) + calculate.number.shrink.tests(stats)
     stats$p.adjust <- pmin(1, stats$p.value * number.tests)
     if (simple)

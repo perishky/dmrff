@@ -71,7 +71,8 @@ ret <- dmrff(ewas.stats$estimate[idx],
              ewas.stats$p.value[idx],
              dataset$methylation[idx,,drop=F],
              manifest$chr[idx],
-             manifest$pos[idx])
+             manifest$pos[idx],
+             minmem=T)
 
 stopifnot(sum(ret$p.adjust < 0.05) == 1)
 
