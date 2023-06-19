@@ -29,7 +29,7 @@
 #'
 #' @export
 dmrff <- function(estimate, se, p.value, methylation, chr, pos,
-                  maxgap=500, p.cutoff=0.05, minmem=F, verbose=T,debug=F) {
+                  maxgap=500, p.cutoff=0.05, minmem=T, verbose=T) {
     stopifnot(is.vector(estimate))
     stopifnot(is.vector(se))
     stopifnot(is.vector(p.value))
@@ -42,20 +42,15 @@ dmrff <- function(estimate, se, p.value, methylation, chr, pos,
     stopifnot(length(estimate) == length(chr))
     stopifnot(length(estimate) == length(pos))
 
-    if (debug) browser()
-
-    # sort input by chromosomal position
-    idx <- order(chr,pos)
-    sorted <- identical(idx, 1:length(idx))
-    if (!sorted) {    
-        estimate <- estimate[idx]
-        se <- se[idx]
-        p.value <- p.value[idx]
-        chr <- chr[idx]
-        pos <- pos[idx]
-        methylation <- methylation[idx,,drop=F]
-    }
-
+    # order input by chromosomal position
+    ord.idx <- order(chr,pos)
+    estimate <- estimate[ord.idx]
+    se <- se[ord.idx]
+    p.value <- p.value[ord.idx]
+    chr <- chr[ord.idx]
+    pos <- pos[ord.idx]
+    sorted <- identical(ord.idx,1:length(ord.idx))
+    
     # identify candidate regions
     candidates <- dmrff.candidates(
         estimate=estimate,
@@ -79,14 +74,16 @@ dmrff <- function(estimate, se, p.value, methylation, chr, pos,
         }))
         estimate <- estimate[red.idx]
         se <- se[red.idx]
-        methylation <- methylation[red.idx,,drop=F]
+        p.value <- p.value[red.idx]
+        methylation <- methylation[ord.idx[red.idx],,drop=F]
         gc()
     } else {
         red.idx <- 1:nrow(methylation)
-        red.end.idx <- candidates$end.idx
         red.start.idx <- candidates$start.idx
+        red.end.idx <- candidates$end.idx
+        methylation <- methylation[ord.idx,,drop=F]
     }
-    
+
     ## scale summary stats as if methylation was standarized
     methylation.sd <- row.sds(methylation,na.rm=T)
     estimate <- estimate/methylation.sd
@@ -116,7 +113,6 @@ dmrff <- function(estimate, se, p.value, methylation, chr, pos,
     collate.stats(stats, chr, pos, simple=!sorted)
 }
 
-
 collate.stats <- function(stats, chr, pos, simple=F) {   
     stats <- with(stats, {
         data.frame(
@@ -143,5 +139,4 @@ collate.stats <- function(stats, chr, pos, simple=F) {
         stats$start.idx <- stats$end.idx <- stats$start.orig <- stats$end.orig <- stats$z.orig <- stats$p.orig <- NULL
     stats
 }
-
 

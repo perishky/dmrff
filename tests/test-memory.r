@@ -36,7 +36,7 @@ for (i in 1:nrow(stats)) {
         ret <- dmrff(
             ewas.stats$estimate, ewas.stats$se, ewas.stats$p.value,
             dataset$methylation,
-            manifest$chr, manifest$pos, minmem=T)
+            manifest$chr, manifest$pos,minmem=T)
     })
     stats$coverage[i] <- sum(ret$end.idx-ret$start.idx+1)
     stats$peak[i] <- mem$Peak_RAM_Used_MiB
@@ -55,7 +55,7 @@ stats
 ## 5   40000      1600 488.9 Mb 102.9     2069
 ## 6   40000      3200 977.2 Mb 219.2     2225
 
-## if minmem=F, then peak is about 11x larger!
+## With minmem=F, memory use is about 11x larger!
 ##   n.sites n.samples      dat   peak coverage
 ## 1   10000       100   7.8 Mb   26.6      547
 ## 2   10000       200  15.4 Mb   48.6      519
