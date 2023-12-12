@@ -4,8 +4,15 @@
 \alias{dmrff.candidates}
 \title{dmrff.candidates}
 \usage{
-dmrff.candidates(estimate, p.value, chr, pos, maxgap = 500,
-  p.cutoff = 0.05, verbose = T)
+dmrff.candidates(
+  estimate,
+  p.value,
+  chr,
+  pos,
+  maxgap = 500,
+  p.cutoff = 0.05,
+  verbose = T
+)
 }
 \arguments{
 \item{estimate}{Vector of EWAS effect estimates

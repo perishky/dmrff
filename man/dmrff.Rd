@@ -4,8 +4,18 @@
 \alias{dmrff}
 \title{dmrff}
 \usage{
-dmrff(estimate, se, p.value, methylation, chr, pos, maxgap = 500,
-  p.cutoff = 0.05, verbose = T, debug = F)
+dmrff(
+  estimate,
+  se,
+  p.value,
+  methylation,
+  chr,
+  pos,
+  maxgap = 500,
+  p.cutoff = 0.05,
+  minmem = T,
+  verbose = T
+)
 }
 \arguments{
 \item{estimate}{Vector of association effect estimates
@@ -35,7 +45,9 @@ A data frame listing all candidate regions and their summary statistics.
 Identifying differentially methylated regions efficiently with power and control.
 }
 \details{
-Note: the function checks that
+Warning! Ensure that the order of the CpG sites corresponding to the the rows of `methylation`
+match the order of the CpG sites corresponding to the other variables,
+e.g. `estimate` and `chr`.
 }
 \examples{
 

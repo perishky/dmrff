@@ -1,3 +1,62 @@
+#' Plot a region
+#'
+#' dmrff.plot
+#'
+#' Calculate statistics for a set of genomic regions.
+#'
+#' @param region.chr/start/end Genomic region to plot.
+#' @param estimate Vector of EWAS effect estimates
+#' (corresponds to rows of \code{methylation}).
+#' @param se Vector of standard errors of the coefficients.
+#' @param methylation Methylation matrix (rows=features, columns=samples).
+#' @param chr Feature chromosome (corresponds to rows of \code{methylation}).
+#' @param pos Feature chromosome position.
+#' @param expand Proportion to expand to include sites beyond the beginning and end of the region (default: 1, i.e. plot 3x the length of the region).
+#' @param ci Show confidence intervals rather than standard errors (default: TRUE).
+#' @param verbose If \code{TRUE} (default), then output status messages.
+#' @return \code{\link{ggplot}} object showing the plot. 
+#'
+#' @export
+dmrff.plot <- function(region.chr, region.start, region.end, estimate, se, chr, pos, expand=1, ci=T, verbose=T) {
+    require(ggplot2)
+    stopifnot(length(region.chr)==1)
+    stopifnot(length(region.start)==1)
+    stopifnot(length(region.end)==1)
+    stopifnot(is.numeric(region.start))
+    stopifnot(is.numeric(region.end))
+    stopifnot(region.start < region.end)
+    stopifnot(is.vector(estimate))
+    stopifnot(is.vector(se))
+    stopifnot(is.vector(chr))
+    stopifnot(is.vector(pos))
+    stopifnot(length(estimate)==length(se))
+    stopifnot(length(estimate)==length(chr))
+    stopifnot(length(estimate)==length(pos))
+    stopifnot(region.chr %in% chr)
+    region.len <- region.end-region.start
+    plot.start <- max(0,region.start - region.len*expand)
+    plot.end <- region.end + region.len*expand
+    idx <- which(chr==region.chr & pos >= plot.start & pos <= plot.end)
+    if (length(idx) == 0)
+        stop("The region does not contain any CpG sites")
+    dat <- data.frame(estimate,se,pos)[idx,]
+    dat$ymax <- dat$estimate + dat$se*ifelse(ci,1.96,1)
+    dat$ymin <- dat$estimate - dat$se*ifelse(ci,1.96,1)
+    dat <- dat[order(dat$pos),]
+    gap <- max(1, min(tail(dat$pos,-1)-head(dat$pos,-1), na.rm=T)/2)
+    (ggplot(dat, aes(x=pos, y=estimate, ymin=ymin, ymax=ymax)) +
+     geom_rect(
+         aes(xmin=region.start-gap, xmax=region.end+gap, ymin=-Inf, ymax=Inf),
+         fill="#BBBBBB", alpha=0.1) +
+     geom_hline(yintercept=0, linetype="dashed", color="black") +
+     geom_pointrange() +
+     labs(
+         y=paste0("estimate (", ifelse(ci, "95% CI", "SE"), ")"),
+         x=paste0("chromosome ", region.chr, " position")))    
+}
+
+
+
 #' Remove points from a scatter plot where density is really high
 #' @param x x-coordinates vector
 #' @param y y-coordinates vector
@@ -29,6 +88,7 @@ scatter.thinning <- function(x,y,resolution=100,max.per.cell=100) {
 #' @return \code{\link{ggplot}} object showing the Manhattan plot. 
 #' @export
 dmrff.manhattan.plot <- function(object, chr, pos, title="Manhattan plot") {
+    require(ggplot2)
     stopifnot(class(object) == "data.frame")
     stopifnot(all(c("chr","start","end","p.value","n") %in% colnames(object)))
     chr <- as.character(chr)

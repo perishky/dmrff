@@ -2,6 +2,10 @@
 #'
 #' Calculate statistics for a set of genomic regions.
 #'
+#' Warning! Ensure that the order of the CpG sites corresponding to the the rows of `methylation`
+#' match the order of the CpG sites corresponding to the other variables,
+#' e.g. `estimate` and `chr`.
+#' 
 #' @param regions Data frame of genomic regions providing
 #' chromosome (chr), start and end coordinates.
 #' @param estimate Vector of EWAS effect estimates

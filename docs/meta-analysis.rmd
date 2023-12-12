@@ -212,6 +212,13 @@ sites <- cbind(sites[,c("region","chr","pos")],
 kable(sites,row.names=F)
 ```
 
+```{r}
+best6 <- dmrs6[which.min(dmrs6$p.value),]
+dmrff.plot(
+    best6$chr, best6$start, best6$end,
+    meta$ewas$estimate, meta$ewas$se, meta$ewas$chr, meta$ewas$pos) 
+```
+
 We can use the same function to show the summary statistics for these sites
 from one of the original studies.
 ```{r}
@@ -221,6 +228,14 @@ sites <- cbind(sites[,c("region","chr","pos")],
                stats[[acc]][sites$site,c("estimate","se","p.value")])
 kable(sites,row.names=F)
 ```
+
+```{r}
+best6 <- dmrs6[which.min(dmrs6$p.value),]
+dmrff.plot(
+    best6$chr, best6$start, best6$end,
+    stats[[acc]]$estimate, stats[[acc]]$se, stats[[acc]]$chr, stats[[acc]]$pos) 
+```
+
 
 Going back to full set of DMRs,
 we can ask which regions are novel,

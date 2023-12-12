@@ -137,7 +137,7 @@ dmrs <- dmrff(stats$estimate, stats$se, stats$p.value, meth, sites$chr, sites$po
 ```
 
 ```
-## [dmrff.candidates] Thu Jan  9 16:55:24 2020 Found  50  candidate regions.
+## [dmrff.candidates] Tue Dec 12 18:42:51 2023 Found  50  candidate regions.
 ```
 
 The following function checks if two regions overlap.
@@ -218,7 +218,7 @@ dmrs <- dmrff(stats$estimate, stats$se, stats$p.value, meth, sites$chr, sites$po
 ```
 
 ```
-## [dmrff.candidates] Thu Jan  9 16:55:26 2020 Found  42  candidate regions.
+## [dmrff.candidates] Tue Dec 12 18:42:52 2023 Found  42  candidate regions.
 ```
 
 As before,

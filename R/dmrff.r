@@ -2,7 +2,10 @@
 #'
 #' Identifying differentially methylated regions efficiently with power and control.
 #'
-#' Note: the function checks that 
+#' Warning! Ensure that the order of the CpG sites corresponding to the the rows of `methylation`
+#' match the order of the CpG sites corresponding to the other variables,
+#' e.g. `estimate` and `chr`.
+#' 
 #' @param estimate Vector of association effect estimates
 #' (corresponds to rows of \code{methylation}).
 #' @param se Vector of standard errors of the effect estimates.

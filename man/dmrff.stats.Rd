@@ -29,3 +29,8 @@ A data frame listing summary statistics for all genomic regions.
 \description{
 Calculate statistics for a set of genomic regions.
 }
+\details{
+Warning! Ensure that the order of the CpG sites corresponding to the the rows of `methylation`
+match the order of the CpG sites corresponding to the other variables,
+e.g. `estimate` and `chr`.
+}

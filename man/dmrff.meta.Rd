@@ -24,6 +24,11 @@ A data frame listing all candidate regions and their summary statistics.
 Identify differentially methylated regions by meta-analysing multiple studies
 using variance-weighted fixed effects meta-analysis.
 }
+\details{
+Warning! Ensure that the order of the CpG sites corresponding to the the rows of `methylation`
+match the order of the CpG sites corresponding to the other variables,
+e.g. `estimate` and `chr`.
+}
 \examples{
 pre1 <- dmrff.pre(est1, se1, meth1, ...)
 pre2 <- dmrff.pre(est2, se2, meth2, ...)

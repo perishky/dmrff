@@ -187,3 +187,10 @@ max.region <- which.max(dmrs$n)
 kable(sites[which(sites$region == max.region),],row.names=F)
 ```
 
+Here we generate a simple plot of the largest DMR:
+
+```{r}
+dmrff.plot(
+    dmrs$chr[max.region], dmrs$start[max.region], dmrs$end[max.region],
+    stats$estimate, stats$se, stats$chr, stats$pos, ci=T, expand=1)
+```

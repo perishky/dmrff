@@ -4,8 +4,7 @@
 \alias{dmrff.pre}
 \title{dmrff.pre}
 \usage{
-dmrff.pre(estimate, se, methylation, chr, pos, maxsize = 20,
-  verbose = T)
+dmrff.pre(estimate, se, methylation, chr, pos, maxsize = 20, verbose = T)
 }
 \arguments{
 \item{estimate}{Vector of association effect estimates
@@ -28,4 +27,9 @@ A list object containing all information needed for inclusion in a meta-analysis
 }
 \description{
 Construct an object for including this dataset in a DMR meta-analysis.
+}
+\details{
+Warning! Ensure that the order of the CpG sites corresponding to the the rows of `methylation`
+match the order of the CpG sites corresponding to the other variables,
+e.g. `estimate` and `chr`.
 }

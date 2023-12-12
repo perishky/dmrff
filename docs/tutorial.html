@@ -5,57 +5,8 @@
 
 <title>Identifying differentially methylated regions using dmrff</title>
 
-<script type="text/javascript">
-window.onload = function() {
-  var imgs = document.getElementsByTagName('img'), i, img;
-  for (i = 0; i < imgs.length; i++) {
-    img = imgs[i];
-    // center an image if it is the only element of its parent
-    if (img.parentElement.childElementCount === 1)
-      img.parentElement.style.textAlign = 'center';
-  }
-};
-</script>
-
-<!-- Styles for R syntax highlighter -->
-<style type="text/css">
-   pre .operator,
-   pre .paren {
-     color: rgb(104, 118, 135)
-   }
-
-   pre .literal {
-     color: #990073
-   }
-
-   pre .number {
-     color: #099;
-   }
-
-   pre .comment {
-     color: #998;
-     font-style: italic
-   }
-
-   pre .keyword {
-     color: #900;
-     font-weight: bold
-   }
-
-   pre .identifier {
-     color: rgb(0, 0, 0);
-   }
-
-   pre .string {
-     color: #d14;
-   }
-</style>
-
-<!-- R syntax highlighter -->
-<script type="text/javascript">
-var hljs=new function(){function m(p){return p.replace(/&/gm,"&amp;").replace(/</gm,"&lt;")}function f(r,q,p){return RegExp(q,"m"+(r.cI?"i":"")+(p?"g":""))}function b(r){for(var p=0;p<r.childNodes.length;p++){var q=r.childNodes[p];if(q.nodeName=="CODE"){return q}if(!(q.nodeType==3&&q.nodeValue.match(/\s+/))){break}}}function h(t,s){var p="";for(var r=0;r<t.childNodes.length;r++){if(t.childNodes[r].nodeType==3){var q=t.childNodes[r].nodeValue;if(s){q=q.replace(/\n/g,"")}p+=q}else{if(t.childNodes[r].nodeName=="BR"){p+="\n"}else{p+=h(t.childNodes[r])}}}if(/MSIE [678]/.test(navigator.userAgent)){p=p.replace(/\r/g,"\n")}return p}function a(s){var r=s.className.split(/\s+/);r=r.concat(s.parentNode.className.split(/\s+/));for(var q=0;q<r.length;q++){var p=r[q].replace(/^language-/,"");if(e[p]){return p}}}function c(q){var p=[];(function(s,t){for(var r=0;r<s.childNodes.length;r++){if(s.childNodes[r].nodeType==3){t+=s.childNodes[r].nodeValue.length}else{if(s.childNodes[r].nodeName=="BR"){t+=1}else{if(s.childNodes[r].nodeType==1){p.push({event:"start",offset:t,node:s.childNodes[r]});t=arguments.callee(s.childNodes[r],t);p.push({event:"stop",offset:t,node:s.childNodes[r]})}}}}return t})(q,0);return p}function k(y,w,x){var q=0;var z="";var s=[];function u(){if(y.length&&w.length){if(y[0].offset!=w[0].offset){return(y[0].offset<w[0].offset)?y:w}else{return w[0].event=="start"?y:w}}else{return y.length?y:w}}function t(D){var A="<"+D.nodeName.toLowerCase();for(var B=0;B<D.attributes.length;B++){var C=D.attributes[B];A+=" "+C.nodeName.toLowerCase();if(C.value!==undefined&&C.value!==false&&C.value!==null){A+='="'+m(C.value)+'"'}}return A+">"}while(y.length||w.length){var v=u().splice(0,1)[0];z+=m(x.substr(q,v.offset-q));q=v.offset;if(v.event=="start"){z+=t(v.node);s.push(v.node)}else{if(v.event=="stop"){var p,r=s.length;do{r--;p=s[r];z+=("</"+p.nodeName.toLowerCase()+">")}while(p!=v.node);s.splice(r,1);while(r<s.length){z+=t(s[r]);r++}}}}return z+m(x.substr(q))}function j(){function q(x,y,v){if(x.compiled){return}var u;var s=[];if(x.k){x.lR=f(y,x.l||hljs.IR,true);for(var w in x.k){if(!x.k.hasOwnProperty(w)){continue}if(x.k[w] instanceof Object){u=x.k[w]}else{u=x.k;w="keyword"}for(var r in u){if(!u.hasOwnProperty(r)){continue}x.k[r]=[w,u[r]];s.push(r)}}}if(!v){if(x.bWK){x.b="\\b("+s.join("|")+")\\s"}x.bR=f(y,x.b?x.b:"\\B|\\b");if(!x.e&&!x.eW){x.e="\\B|\\b"}if(x.e){x.eR=f(y,x.e)}}if(x.i){x.iR=f(y,x.i)}if(x.r===undefined){x.r=1}if(!x.c){x.c=[]}x.compiled=true;for(var t=0;t<x.c.length;t++){if(x.c[t]=="self"){x.c[t]=x}q(x.c[t],y,false)}if(x.starts){q(x.starts,y,false)}}for(var p in e){if(!e.hasOwnProperty(p)){continue}q(e[p].dM,e[p],true)}}function d(B,C){if(!j.called){j();j.called=true}function q(r,M){for(var L=0;L<M.c.length;L++){if((M.c[L].bR.exec(r)||[null])[0]==r){return M.c[L]}}}function v(L,r){if(D[L].e&&D[L].eR.test(r)){return 1}if(D[L].eW){var M=v(L-1,r);return M?M+1:0}return 0}function w(r,L){return L.i&&L.iR.test(r)}function K(N,O){var M=[];for(var L=0;L<N.c.length;L++){M.push(N.c[L].b)}var r=D.length-1;do{if(D[r].e){M.push(D[r].e)}r--}while(D[r+1].eW);if(N.i){M.push(N.i)}return f(O,M.join("|"),true)}function p(M,L){var N=D[D.length-1];if(!N.t){N.t=K(N,E)}N.t.lastIndex=L;var r=N.t.exec(M);return r?[M.substr(L,r.index-L),r[0],false]:[M.substr(L),"",true]}function z(N,r){var L=E.cI?r[0].toLowerCase():r[0];var M=N.k[L];if(M&&M instanceof Array){return M}return false}function F(L,P){L=m(L);if(!P.k){return L}var r="";var O=0;P.lR.lastIndex=0;var M=P.lR.exec(L);while(M){r+=L.substr(O,M.index-O);var N=z(P,M);if(N){x+=N[1];r+='<span class="'+N[0]+'">'+M[0]+"</span>"}else{r+=M[0]}O=P.lR.lastIndex;M=P.lR.exec(L)}return r+L.substr(O,L.length-O)}function J(L,M){if(M.sL&&e[M.sL]){var r=d(M.sL,L);x+=r.keyword_count;return r.value}else{return F(L,M)}}function I(M,r){var L=M.cN?'<span class="'+M.cN+'">':"";if(M.rB){y+=L;M.buffer=""}else{if(M.eB){y+=m(r)+L;M.buffer=""}else{y+=L;M.buffer=r}}D.push(M);A+=M.r}function G(N,M,Q){var R=D[D.length-1];if(Q){y+=J(R.buffer+N,R);return false}var P=q(M,R);if(P){y+=J(R.buffer+N,R);I(P,M);return P.rB}var L=v(D.length-1,M);if(L){var O=R.cN?"</span>":"";if(R.rE){y+=J(R.buffer+N,R)+O}else{if(R.eE){y+=J(R.buffer+N,R)+O+m(M)}else{y+=J(R.buffer+N+M,R)+O}}while(L>1){O=D[D.length-2].cN?"</span>":"";y+=O;L--;D.length--}var r=D[D.length-1];D.length--;D[D.length-1].buffer="";if(r.starts){I(r.starts,"")}return R.rE}if(w(M,R)){throw"Illegal"}}var E=e[B];var D=[E.dM];var A=0;var x=0;var y="";try{var s,u=0;E.dM.buffer="";do{s=p(C,u);var t=G(s[0],s[1],s[2]);u+=s[0].length;if(!t){u+=s[1].length}}while(!s[2]);if(D.length>1){throw"Illegal"}return{r:A,keyword_count:x,value:y}}catch(H){if(H=="Illegal"){return{r:0,keyword_count:0,value:m(C)}}else{throw H}}}function g(t){var p={keyword_count:0,r:0,value:m(t)};var r=p;for(var q in e){if(!e.hasOwnProperty(q)){continue}var s=d(q,t);s.language=q;if(s.keyword_count+s.r>r.keyword_count+r.r){r=s}if(s.keyword_count+s.r>p.keyword_count+p.r){r=p;p=s}}if(r.language){p.second_best=r}return p}function i(r,q,p){if(q){r=r.replace(/^((<[^>]+>|\t)+)/gm,function(t,w,v,u){return w.replace(/\t/g,q)})}if(p){r=r.replace(/\n/g,"<br>")}return r}function n(t,w,r){var x=h(t,r);var v=a(t);var y,s;if(v){y=d(v,x)}else{return}var q=c(t);if(q.length){s=document.createElement("pre");s.innerHTML=y.value;y.value=k(q,c(s),x)}y.value=i(y.value,w,r);var u=t.className;if(!u.match("(\\s|^)(language-)?"+v+"(\\s|$)")){u=u?(u+" "+v):v}if(/MSIE [678]/.test(navigator.userAgent)&&t.tagName=="CODE"&&t.parentNode.tagName=="PRE"){s=t.parentNode;var p=document.createElement("div");p.innerHTML="<pre><code>"+y.value+"</code></pre>";t=p.firstChild.firstChild;p.firstChild.cN=s.cN;s.parentNode.replaceChild(p.firstChild,s)}else{t.innerHTML=y.value}t.className=u;t.result={language:v,kw:y.keyword_count,re:y.r};if(y.second_best){t.second_best={language:y.second_best.language,kw:y.second_best.keyword_count,re:y.second_best.r}}}function o(){if(o.called){return}o.called=true;var r=document.getElementsByTagName("pre");for(var p=0;p<r.length;p++){var q=b(r[p]);if(q){n(q,hljs.tabReplace)}}}function l(){if(window.addEventListener){window.addEventListener("DOMContentLoaded",o,false);window.addEventListener("load",o,false)}else{if(window.attachEvent){window.attachEvent("onload",o)}else{window.onload=o}}}var e={};this.LANGUAGES=e;this.highlight=d;this.highlightAuto=g;this.fixMarkup=i;this.highlightBlock=n;this.initHighlighting=o;this.initHighlightingOnLoad=l;this.IR="[a-zA-Z][a-zA-Z0-9_]*";this.UIR="[a-zA-Z_][a-zA-Z0-9_]*";this.NR="\\b\\d+(\\.\\d+)?";this.CNR="\\b(0[xX][a-fA-F0-9]+|(\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?)";this.BNR="\\b(0b[01]+)";this.RSR="!|!=|!==|%|%=|&|&&|&=|\\*|\\*=|\\+|\\+=|,|\\.|-|-=|/|/=|:|;|<|<<|<<=|<=|=|==|===|>|>=|>>|>>=|>>>|>>>=|\\?|\\[|\\{|\\(|\\^|\\^=|\\||\\|=|\\|\\||~";this.ER="(?![\\s\\S])";this.BE={b:"\\\\.",r:0};this.ASM={cN:"string",b:"'",e:"'",i:"\\n",c:[this.BE],r:0};this.QSM={cN:"string",b:'"',e:'"',i:"\\n",c:[this.BE],r:0};this.CLCM={cN:"comment",b:"//",e:"$"};this.CBLCLM={cN:"comment",b:"/\\*",e:"\\*/"};this.HCM={cN:"comment",b:"#",e:"$"};this.NM={cN:"number",b:this.NR,r:0};this.CNM={cN:"number",b:this.CNR,r:0};this.BNM={cN:"number",b:this.BNR,r:0};this.inherit=function(r,s){var p={};for(var q in r){p[q]=r[q]}if(s){for(var q in s){p[q]=s[q]}}return p}}();hljs.LANGUAGES.cpp=function(){var a={keyword:{"false":1,"int":1,"float":1,"while":1,"private":1,"char":1,"catch":1,"export":1,virtual:1,operator:2,sizeof:2,dynamic_cast:2,typedef:2,const_cast:2,"const":1,struct:1,"for":1,static_cast:2,union:1,namespace:1,unsigned:1,"long":1,"throw":1,"volatile":2,"static":1,"protected":1,bool:1,template:1,mutable:1,"if":1,"public":1,friend:2,"do":1,"return":1,"goto":1,auto:1,"void":2,"enum":1,"else":1,"break":1,"new":1,extern:1,using:1,"true":1,"class":1,asm:1,"case":1,typeid:1,"short":1,reinterpret_cast:2,"default":1,"double":1,register:1,explicit:1,signed:1,typename:1,"try":1,"this":1,"switch":1,"continue":1,wchar_t:1,inline:1,"delete":1,alignof:1,char16_t:1,char32_t:1,constexpr:1,decltype:1,noexcept:1,nullptr:1,static_assert:1,thread_local:1,restrict:1,_Bool:1,complex:1},built_in:{std:1,string:1,cin:1,cout:1,cerr:1,clog:1,stringstream:1,istringstream:1,ostringstream:1,auto_ptr:1,deque:1,list:1,queue:1,stack:1,vector:1,map:1,set:1,bitset:1,multiset:1,multimap:1,unordered_set:1,unordered_map:1,unordered_multiset:1,unordered_multimap:1,array:1,shared_ptr:1}};return{dM:{k:a,i:"</",c:[hljs.CLCM,hljs.CBLCLM,hljs.QSM,{cN:"string",b:"'\\\\?.",e:"'",i:"."},{cN:"number",b:"\\b(\\d+(\\.\\d*)?|\\.\\d+)(u|U|l|L|ul|UL|f|F)"},hljs.CNM,{cN:"preprocessor",b:"#",e:"$"},{cN:"stl_container",b:"\\b(deque|list|queue|stack|vector|map|set|bitset|multiset|multimap|unordered_map|unordered_set|unordered_multiset|unordered_multimap|array)\\s*<",e:">",k:a,r:10,c:["self"]}]}}}();hljs.LANGUAGES.r={dM:{c:[hljs.HCM,{cN:"number",b:"\\b0[xX][0-9a-fA-F]+[Li]?\\b",e:hljs.IMMEDIATE_RE,r:0},{cN:"number",b:"\\b\\d+(?:[eE][+\\-]?\\d*)?L\\b",e:hljs.IMMEDIATE_RE,r:0},{cN:"number",b:"\\b\\d+\\.(?!\\d)(?:i\\b)?",e:hljs.IMMEDIATE_RE,r:1},{cN:"number",b:"\\b\\d+(?:\\.\\d*)?(?:[eE][+\\-]?\\d*)?i?\\b",e:hljs.IMMEDIATE_RE,r:0},{cN:"number",b:"\\.\\d+(?:[eE][+\\-]?\\d*)?i?\\b",e:hljs.IMMEDIATE_RE,r:1},{cN:"keyword",b:"(?:tryCatch|library|setGeneric|setGroupGeneric)\\b",e:hljs.IMMEDIATE_RE,r:10},{cN:"keyword",b:"\\.\\.\\.",e:hljs.IMMEDIATE_RE,r:10},{cN:"keyword",b:"\\.\\.\\d+(?![\\w.])",e:hljs.IMMEDIATE_RE,r:10},{cN:"keyword",b:"\\b(?:function)",e:hljs.IMMEDIATE_RE,r:2},{cN:"keyword",b:"(?:if|in|break|next|repeat|else|for|return|switch|while|try|stop|warning|require|attach|detach|source|setMethod|setClass)\\b",e:hljs.IMMEDIATE_RE,r:1},{cN:"literal",b:"(?:NA|NA_integer_|NA_real_|NA_character_|NA_complex_)\\b",e:hljs.IMMEDIATE_RE,r:10},{cN:"literal",b:"(?:NULL|TRUE|FALSE|T|F|Inf|NaN)\\b",e:hljs.IMMEDIATE_RE,r:1},{cN:"identifier",b:"[a-zA-Z.][a-zA-Z0-9._]*\\b",e:hljs.IMMEDIATE_RE,r:0},{cN:"operator",b:"<\\-(?!\\s*\\d)",e:hljs.IMMEDIATE_RE,r:2},{cN:"operator",b:"\\->|<\\-",e:hljs.IMMEDIATE_RE,r:1},{cN:"operator",b:"%%|~",e:hljs.IMMEDIATE_RE},{cN:"operator",b:">=|<=|==|!=|\\|\\||&&|=|\\+|\\-|\\*|/|\\^|>|<|!|&|\\||\\$|:",e:hljs.IMMEDIATE_RE,r:0},{cN:"operator",b:"%",e:"%",i:"\\n",r:1},{cN:"identifier",b:"`",e:"`",r:0},{cN:"string",b:'"',e:'"',c:[hljs.BE],r:0},{cN:"string",b:"'",e:"'",c:[hljs.BE],r:0},{cN:"paren",b:"[[({\\])}]",e:hljs.IMMEDIATE_RE,r:0}]}};
-hljs.initHighlightingOnLoad();
-</script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.6.0/build/styles/github.min.css">
+<script src="https://cdn.jsdelivr.net/combine/gh/highlightjs/cdn-release@11.6.0/build/highlight.min.js,npm/@xiee/utils/js/load-highlight.js" async></script>
 
 
 
@@ -118,10 +69,11 @@ pre code {
 code {
   font-size: 92%;
   border: 1px solid #ccc;
+  background-color: #E8E8D8;
 }
 
 code[class] {
-  background-color: #F8F8F8;
+  background-color: #E8E8D8;
 }
 
 table, td, th {
@@ -138,9 +90,9 @@ blockquote {
 hr {
    height: 0px;
    border-bottom: none;
-   border-top-width: thin;
-   border-top-style: dotted;
-   border-top-color: #999999;
+   border-top-width: thick;
+   border-top-style: solid;
+   border-top-color: #888888;
 }
 
 @media print {
@@ -201,37 +153,47 @@ hr {
 </head>
 
 <body>
+<div id="TOC">
+<ul>
+<li>Identifying differentially methylated regions using dmrff
+<ul>
+<li>Download and prepare an example DNA methylation dataset</li>
+<li>Test DNA methylation associations</li>
+<li>Add genomic coordinates for CpG sites (Illumina Beadchips)</li>
+</ul>
+</li>
+</ul>
+</div>
 <h1>Identifying differentially methylated regions using dmrff</h1>
-
 <h2>Download and prepare an example DNA methylation dataset</h2>
-
-<p>We&#39;ll use a small cord blood DNA methylation dataset
+<p>We’ll use a small cord blood DNA methylation dataset
 available on GEO: <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE79056">GSE79056</a>.</p>
-
-<pre><code class="r">library(geograbi) ## https://github.com/yousefi138
+<pre><code class="language-r">library(geograbi) ## https://github.com/yousefi138
 </code></pre>
-
-<pre><code class="r">samples &lt;- geograbi.get.samples(&quot;GSE79056&quot;)
+<pre><code>## Loading required package: XML
 </code></pre>
-
-<pre><code class="r">vars &lt;- geograbi.extract.characteristics(samples)
+<pre><code>## Loading required package: data.table
+</code></pre>
+<pre><code class="language-r">samples &lt;- geograbi.get.samples(&quot;GSE79056&quot;)
+</code></pre>
+<pre><code>## Tue Dec 12 19:02:34 2023 reading
+</code></pre>
+<pre><code class="language-r">vars &lt;- geograbi.extract.characteristics(samples)
 methylation &lt;- geograbi.get.data(&quot;GSE79056&quot;) ## 86Mb
 </code></pre>
-
-<p>We&#39;ll be investigating associations with gestational age.</p>
-
-<pre><code class="r">colnames(vars)[which(colnames(vars) == &quot;ga weeks&quot;)] &lt;- &quot;ga&quot;
+<pre><code>## Tue Dec 12 19:02:35 2023 reading
+</code></pre>
+<p>We’ll be investigating associations with gestational age.</p>
+<pre><code class="language-r">colnames(vars)[which(colnames(vars) == &quot;ga weeks&quot;)] &lt;- &quot;ga&quot;
 vars$ga &lt;- as.numeric(vars$ga)
 </code></pre>
-
 <h2>Test DNA methylation associations</h2>
-
 <p>Prepare surrogate variables to handle unknown confounding.</p>
-
-<pre><code class="r">library(sva, quietly=T)
+<pre><code class="language-r">library(sva, quietly=T)
 </code></pre>
-
-<pre><code class="r">## construct EWAS model
+<pre><code>## This is mgcv 1.8-41. For overview type 'help(&quot;mgcv-package&quot;)'.
+</code></pre>
+<pre><code class="language-r">## construct EWAS model
 mod &lt;- model.matrix(~ gender + ga, vars)
 ## construct null model
 mod0 &lt;- mod[,1]
@@ -246,85 +208,170 @@ if (nrow(idx) &gt; 0)
     methylation.sva[idx] &lt;- methylation.mean[idx[,&quot;row&quot;]]
 sva.fit &lt;- sva(methylation.sva, mod=mod, mod0=mod0)
 </code></pre>
-
-<p>Add surrogate variables to the model.</p>
-
-<pre><code class="r">design &lt;- cbind(mod, sva.fit$sv)
+<pre><code>## Number of significant surrogate variables is:  3 
+## Iteration (out of 5 ):1  2  3  4  5
 </code></pre>
-
-<p>Test the associations using <code>limma</code>. </p>
-
-<pre><code class="r">library(limma)
+<p>Add surrogate variables to the model.</p>
+<pre><code class="language-r">design &lt;- cbind(mod, sva.fit$sv)
+</code></pre>
+<p>Test the associations using <code>limma</code>.</p>
+<pre><code class="language-r">library(limma)
 fit &lt;- lmFit(methylation, design)
 fit &lt;- eBayes(fit)
 </code></pre>
-
 <p>Save the summary statistics for gestational age.</p>
-
-<pre><code class="r">stats &lt;- data.frame(estimate=fit$coefficients[,&quot;ga&quot;],
+<pre><code class="language-r">stats &lt;- data.frame(estimate=fit$coefficients[,&quot;ga&quot;],
                     se=sqrt(fit$s2.post) * fit$stdev.unscaled[,&quot;ga&quot;],
                     p.value=fit$p.value[,&quot;ga&quot;])
 </code></pre>
-
 <h2>Add genomic coordinates for CpG sites (Illumina Beadchips)</h2>
-
 <p><code>dmrff</code> and all other methods for identifying differentially methylated regions
-require information about the genomic locations of all CpG sites. </p>
-
+require information about the genomic locations of all CpG sites.</p>
 <p>If your data was generated using one of the Illumina BeadChips, then it is possible
 to annotate your EWAS summary statistics using the appropriate
 <a href="https://www.bioconductor.org/">Bioconductor</a> annotation package.</p>
-
 <p>For the Illumina 450K microaray, we use the
 <code>IlluminaHumanMethylation450kanno.ilmn12.hg19</code> package.</p>
-
-<pre><code class="r">if (!require(IlluminaHumanMethylation450kanno.ilmn12.hg19, quietly=T)) {
+<pre><code class="language-r">if (!require(IlluminaHumanMethylation450kanno.ilmn12.hg19, quietly=T)) {
     install.packages(&quot;BiocManager&quot;)
     BiocManager::install(&quot;IlluminaHumanMethylation450kanno.ilmn12.hg19&quot;)
 }
 </code></pre>
-
-<pre><code class="r">library(IlluminaHumanMethylation450kanno.ilmn12.hg19)
+<pre><code>## 
+## Attaching package: 'BiocGenerics'
 </code></pre>
-
+<pre><code>## The following object is masked from 'package:limma':
+## 
+##     plotMA
+</code></pre>
+<pre><code>## The following objects are masked from 'package:stats':
+## 
+##     IQR, mad, sd, var, xtabs
+</code></pre>
+<pre><code>## The following objects are masked from 'package:base':
+## 
+##     anyDuplicated, aperm, append, as.data.frame, basename, cbind,
+##     colnames, dirname, do.call, duplicated, eval, evalq, Filter, Find,
+##     get, grep, grepl, intersect, is.unsorted, lapply, Map, mapply,
+##     match, mget, order, paste, pmax, pmax.int, pmin, pmin.int,
+##     Position, rank, rbind, Reduce, rownames, sapply, setdiff, sort,
+##     table, tapply, union, unique, unsplit, which.max, which.min
+</code></pre>
+<pre><code>## 
+## Attaching package: 'S4Vectors'
+</code></pre>
+<pre><code>## The following objects are masked from 'package:data.table':
+## 
+##     first, second
+</code></pre>
+<pre><code>## The following objects are masked from 'package:base':
+## 
+##     expand.grid, I, unname
+</code></pre>
+<pre><code>## 
+## Attaching package: 'IRanges'
+</code></pre>
+<pre><code>## The following object is masked from 'package:nlme':
+## 
+##     collapse
+</code></pre>
+<pre><code>## The following object is masked from 'package:data.table':
+## 
+##     shift
+</code></pre>
+<pre><code>## 
+## Attaching package: 'matrixStats'
+</code></pre>
+<pre><code>## The following objects are masked from 'package:genefilter':
+## 
+##     rowSds, rowVars
+</code></pre>
+<pre><code>## 
+## Attaching package: 'MatrixGenerics'
+</code></pre>
+<pre><code>## The following objects are masked from 'package:matrixStats':
+## 
+##     colAlls, colAnyNAs, colAnys, colAvgsPerRowSet, colCollapse,
+##     colCounts, colCummaxs, colCummins, colCumprods, colCumsums,
+##     colDiffs, colIQRDiffs, colIQRs, colLogSumExps, colMadDiffs,
+##     colMads, colMaxs, colMeans2, colMedians, colMins, colOrderStats,
+##     colProds, colQuantiles, colRanges, colRanks, colSdDiffs, colSds,
+##     colSums2, colTabulates, colVarDiffs, colVars, colWeightedMads,
+##     colWeightedMeans, colWeightedMedians, colWeightedSds,
+##     colWeightedVars, rowAlls, rowAnyNAs, rowAnys, rowAvgsPerColSet,
+##     rowCollapse, rowCounts, rowCummaxs, rowCummins, rowCumprods,
+##     rowCumsums, rowDiffs, rowIQRDiffs, rowIQRs, rowLogSumExps,
+##     rowMadDiffs, rowMads, rowMaxs, rowMeans2, rowMedians, rowMins,
+##     rowOrderStats, rowProds, rowQuantiles, rowRanges, rowRanks,
+##     rowSdDiffs, rowSds, rowSums2, rowTabulates, rowVarDiffs, rowVars,
+##     rowWeightedMads, rowWeightedMeans, rowWeightedMedians,
+##     rowWeightedSds, rowWeightedVars
+</code></pre>
+<pre><code>## The following objects are masked from 'package:genefilter':
+## 
+##     rowSds, rowVars
+</code></pre>
+<pre><code>## Welcome to Bioconductor
+## 
+##     Vignettes contain introductory material; view with
+##     'browseVignettes()'. To cite Bioconductor, see
+##     'citation(&quot;Biobase&quot;)', and for packages 'citation(&quot;pkgname&quot;)'.
+</code></pre>
+<pre><code>## 
+## Attaching package: 'Biobase'
+</code></pre>
+<pre><code>## The following object is masked from 'package:MatrixGenerics':
+## 
+##     rowMedians
+</code></pre>
+<pre><code>## The following objects are masked from 'package:matrixStats':
+## 
+##     anyMissing, rowMedians
+</code></pre>
+<pre><code>## 
+## Attaching package: 'Biostrings'
+</code></pre>
+<pre><code>## The following object is masked from 'package:base':
+## 
+##     strsplit
+</code></pre>
+<pre><code>## locfit 1.5-9.6 	 2022-07-11
+</code></pre>
+<pre><code>## Setting options('download.file.method.GEOquery'='auto')
+</code></pre>
+<pre><code>## Setting options('GEOquery.inmemory.gpl'=FALSE)
+</code></pre>
+<pre><code class="language-r">library(IlluminaHumanMethylation450kanno.ilmn12.hg19)
+</code></pre>
 <p>If we were using the more recent Illumina MethylationEPIC BeadChip,
 then we would load the <code>IlluminaHumanMethylationEPICanno.ilm10b2.hg19</code> package instead.</p>
-
 <p>We construct an annotation data frame as follows:</p>
-
-<pre><code class="r">data(list=&quot;IlluminaHumanMethylation450kanno.ilmn12.hg19&quot;)
+<pre><code class="language-r">data(list=&quot;IlluminaHumanMethylation450kanno.ilmn12.hg19&quot;)
 data(Locations)
 data(Other)
 annotation &lt;- cbind(as.data.frame(Locations), as.data.frame(Other))
 </code></pre>
-
 <p>We then add the annotation to the <code>stats</code> object
 (<strong>Warning</strong>: we assume that the row names of the <code>stats</code> object
 are the Illumina CpG site identifiers, e.g. cg05775921).</p>
-
-<pre><code class="r">common &lt;- intersect(rownames(methylation), rownames(annotation))
+<pre><code class="language-r">common &lt;- intersect(rownames(methylation), rownames(annotation))
 annotation &lt;- annotation[match(common, rownames(annotation)),]
 stats &lt;- stats[match(common, rownames(stats)),]
 methylation &lt;- methylation[match(common, rownames(methylation)),]
 
 stats &lt;- cbind(stats, annotation)
 </code></pre>
-
 <h2>Apply <code>dmrff</code> to summary statistics</h2>
-
 <p>If <code>dmrff</code> is not already installed, we install it and then load it:</p>
-
-<pre><code class="r">if (!require(dmrff, quietly=T)) {
+<pre><code class="language-r">if (!require(dmrff, quietly=T)) {
     library(devtools)
     install_github(&quot;perishky/dmrff&quot;)
 }
 library(dmrff)
 </code></pre>
-
 <p>Below we assume that you have already performed an epigenome-wide association analysis
 and have loaded your summary statistics in R as a data frame <code>stats</code>
 which has the following columns:</p>
-
 <ul>
 <li><code>estimate</code> (regression coefficient),</li>
 <li><code>se</code> (standard error of the coefficient),</li>
@@ -332,15 +379,12 @@ which has the following columns:</p>
 <li><code>chr</code> (chromosome of the CpG site),</li>
 <li><code>pos</code> (position of the CpG site on the chromosome).</li>
 </ul>
-
 <p>We also assume that you have loaded your DNA methylation dataset in R as matrix <code>methylation</code>
 for which rows correspond to CpG sites and columns to samples.
 The DNA methylation levels are necessary for <code>dmrff</code> to calculate
 and adjust for dependencies between CpG sites.</p>
-
 <p><code>dmrff</code> can then be applied as follows.</p>
-
-<pre><code class="r">dmrs &lt;- dmrff(estimate=stats$estimate,
+<pre><code class="language-r">dmrs &lt;- dmrff(estimate=stats$estimate,
               se=stats$se,
               p.value=stats$p.value,
               methylation=methylation,
@@ -349,35 +393,26 @@ and adjust for dependencies between CpG sites.</p>
               maxgap=500,
               verbose=T)
 </code></pre>
-
-<pre><code>## [dmrff.candidates] Tue Oct 29 17:01:56 2019 Found  41834  candidate regions.
+<pre><code>## [dmrff.candidates] Tue Dec 12 19:03:40 2023 Found  74588  candidate regions.
 </code></pre>
-
 <p>The algorithm will then identify differentially methylated regions by:</p>
-
 <ul>
-<li>Identifying regions composed of CpG sites with EWAS p-values &lt; 0.05 and consist direction of effect (at most 500bp between CpG sites &ndash; see <code>maxgap</code> parameter).</li>
+<li>Identifying regions composed of CpG sites with EWAS p-values &lt; 0.05 and consist direction of effect (at most 500bp between CpG sites – see <code>maxgap</code> parameter).</li>
 <li>Meta-analysing EWAS statistics within each region as well as sub-regions to identify the sub-region with lowest meta-analysed p-value.</li>
 <li>Adjusting meta-analysed p-values for multiple tests (all EWAS tests + sub-region meta-analysis tests).</li>
 <li>Finally, returning the DMR results.</li>
 </ul>
-
 <p>Our output <code>dmrs</code> is a data frame listing all genomic regions tested
 along with summary statistics for each.</p>
-
 <p>We just keep regions with &gt; 1 CpG site and Bonferroni adjusted p &lt; 0.05.</p>
-
-<pre><code class="r">dmrs &lt;- dmrs[which(dmrs$p.adjust &lt; 0.05 &amp; dmrs$n &gt; 1),]
+<pre><code class="language-r">dmrs &lt;- dmrs[which(dmrs$p.adjust &lt; 0.05 &amp; dmrs$n &gt; 1),]
 </code></pre>
-
-<p>There are 440 such DMRs.</p>
-
+<p>There are 1368 such DMRs.</p>
 <p>Here are the first 10 regions:</p>
-
-<pre><code class="r">kable(dmrs[1:10,])
+<pre><code class="language-r">kable(dmrs[1:10,])
 </code></pre>
-
-<table><thead>
+<table>
+<thead>
 <tr>
 <th align="left"></th>
 <th align="left">chr</th>
@@ -392,163 +427,161 @@ along with summary statistics for each.</p>
 <th align="right">p.value</th>
 <th align="right">p.adjust</th>
 </tr>
-</thead><tbody>
+</thead>
+<tbody>
 <tr>
 <td align="left">1</td>
 <td align="left">chr6</td>
-<td align="right">32120584</td>
-<td align="right">32120878</td>
-<td align="right">6</td>
-<td align="right">0.0133915</td>
-<td align="right">0.0014515</td>
-<td align="right">0.0133915</td>
-<td align="right">0.0014515</td>
-<td align="right">9.225734</td>
+<td align="right">32119616</td>
+<td align="right">32121420</td>
+<td align="right">39</td>
+<td align="right">0.0594703</td>
+<td align="right">0.0036198</td>
+<td align="right">0.0594703</td>
+<td align="right">0.0036198</td>
+<td align="right">16.429200</td>
 <td align="right">0</td>
 <td align="right">0.0000000</td>
 </tr>
 <tr>
-<td align="left">2</td>
+<td align="left">3</td>
 <td align="left">chr6</td>
-<td align="right">32119944</td>
-<td align="right">32120203</td>
-<td align="right">3</td>
-<td align="right">0.0047073</td>
-<td align="right">0.0006831</td>
-<td align="right">0.0047073</td>
-<td align="right">0.0006831</td>
-<td align="right">6.891180</td>
+<td align="right">33245474</td>
+<td align="right">33245779</td>
+<td align="right">17</td>
+<td align="right">-0.1546681</td>
+<td align="right">0.0117290</td>
+<td align="right">-0.1546681</td>
+<td align="right">0.0117290</td>
+<td align="right">-13.186791</td>
 <td align="right">0</td>
-<td align="right">0.0000021</td>
+<td align="right">0.0000000</td>
 </tr>
 <tr>
-<td align="left">4</td>
+<td align="left">5</td>
 <td align="left">chr6</td>
-<td align="right">32121143</td>
-<td align="right">32121156</td>
-<td align="right">2</td>
-<td align="right">0.0089995</td>
-<td align="right">0.0012446</td>
-<td align="right">0.0089995</td>
-<td align="right">0.0012446</td>
-<td align="right">7.230775</td>
+<td align="right">33245893</td>
+<td align="right">33246094</td>
+<td align="right">7</td>
+<td align="right">-0.1404528</td>
+<td align="right">0.0162813</td>
+<td align="right">-0.1404528</td>
+<td align="right">0.0162813</td>
+<td align="right">-8.626631</td>
 <td align="right">0</td>
-<td align="right">0.0000002</td>
+<td align="right">0.0000000</td>
 </tr>
 <tr>
-<td align="left">21</td>
+<td align="left">10</td>
 <td align="left">chr6</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">47</td>
-<td align="right">-0.0004568</td>
-<td align="right">0.0000769</td>
-<td align="right">-0.0004568</td>
-<td align="right">0.0000769</td>
-<td align="right">-5.943456</td>
+<td align="right">31867847</td>
+<td align="right">31869088</td>
+<td align="right">32</td>
+<td align="right">-0.0591950</td>
+<td align="right">0.0041669</td>
+<td align="right">-0.0591950</td>
+<td align="right">0.0041669</td>
+<td align="right">-14.205932</td>
 <td align="right">0</td>
-<td align="right">0.0010452</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr>
+<td align="left">12</td>
+<td align="left">chr6</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">53</td>
+<td align="right">0.0392814</td>
+<td align="right">0.0050978</td>
+<td align="right">0.0392814</td>
+<td align="right">0.0050978</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr>
+<td align="left">14</td>
+<td align="left">chr11</td>
+<td align="right">14993378</td>
+<td align="right">14993642</td>
+<td align="right">4</td>
+<td align="right">0.1616448</td>
+<td align="right">0.0199695</td>
+<td align="right">0.1616448</td>
+<td align="right">0.0199695</td>
+<td align="right">8.094569</td>
+<td align="right">0</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr>
+<td align="left">15</td>
+<td align="left">chr11</td>
+<td align="right">14994230</td>
+<td align="right">14994606</td>
+<td align="right">5</td>
+<td align="right">0.1211192</td>
+<td align="right">0.0196781</td>
+<td align="right">0.1211192</td>
+<td align="right">0.0196781</td>
+<td align="right">6.155039</td>
+<td align="right">0</td>
+<td align="right">0.0004818</td>
 </tr>
 <tr>
 <td align="left">23</td>
 <td align="left">chr6</td>
-<td align="right">33245488</td>
-<td align="right">33245537</td>
-<td align="right">3</td>
-<td align="right">-0.0065765</td>
-<td align="right">0.0007459</td>
-<td align="right">-0.0065765</td>
-<td align="right">0.0007459</td>
-<td align="right">-8.816650</td>
+<td align="right">30458158</td>
+<td align="right">30459295</td>
+<td align="right">11</td>
+<td align="right">-0.1580182</td>
+<td align="right">0.0116069</td>
+<td align="right">-0.1580182</td>
+<td align="right">0.0116069</td>
+<td align="right">-13.614168</td>
 <td align="right">0</td>
 <td align="right">0.0000000</td>
 </tr>
 <tr>
-<td align="left">28</td>
+<td align="left">24</td>
 <td align="left">chr6</td>
-<td align="right">33245893</td>
-<td align="right">33246094</td>
-<td align="right">5</td>
-<td align="right">-0.0038212</td>
-<td align="right">0.0005975</td>
-<td align="right">-0.0038212</td>
-<td align="right">0.0005975</td>
-<td align="right">-6.395753</td>
+<td align="right">30459540</td>
+<td align="right">30460600</td>
+<td align="right">9</td>
+<td align="right">-0.0923506</td>
+<td align="right">0.0112549</td>
+<td align="right">-0.0923506</td>
+<td align="right">0.0112549</td>
+<td align="right">-8.205369</td>
 <td align="right">0</td>
-<td align="right">0.0000598</td>
+<td align="right">0.0000000</td>
 </tr>
 <tr>
-<td align="left">46</td>
-<td align="left">chr11</td>
-<td align="right">14994230</td>
-<td align="right">14994561</td>
-<td align="right">4</td>
-<td align="right">0.0052970</td>
-<td align="right">0.0008988</td>
-<td align="right">0.0052970</td>
-<td align="right">0.0008988</td>
-<td align="right">5.893703</td>
+<td align="left">27</td>
+<td align="left">chr17</td>
+<td align="right">41278141</td>
+<td align="right">41278425</td>
+<td align="right">10</td>
+<td align="right">-0.1191146</td>
+<td align="right">0.0189142</td>
+<td align="right">-0.1191146</td>
+<td align="right">0.0189142</td>
+<td align="right">-6.297623</td>
 <td align="right">0</td>
-<td align="right">0.0014143</td>
+<td align="right">0.0001940</td>
 </tr>
-<tr>
-<td align="left">76</td>
-<td align="left">chr6</td>
-<td align="right">32117292</td>
-<td align="right">32117377</td>
-<td align="right">2</td>
-<td align="right">0.0030610</td>
-<td align="right">0.0005236</td>
-<td align="right">0.0030610</td>
-<td align="right">0.0005236</td>
-<td align="right">5.846178</td>
-<td align="right">0</td>
-<td align="right">0.0018838</td>
-</tr>
-<tr>
-<td align="left">98</td>
-<td align="left">chr6</td>
-<td align="right">30653191</td>
-<td align="right">30653242</td>
-<td align="right">2</td>
-<td align="right">-0.0032880</td>
-<td align="right">0.0004738</td>
-<td align="right">-0.0032880</td>
-<td align="right">0.0004738</td>
-<td align="right">-6.940174</td>
-<td align="right">0</td>
-<td align="right">0.0000015</td>
-</tr>
-<tr>
-<td align="left">103</td>
-<td align="left">chr6</td>
-<td align="right">30653407</td>
-<td align="right">30653732</td>
-<td align="right">4</td>
-<td align="right">-0.0033657</td>
-<td align="right">0.0006041</td>
-<td align="right">-0.0033657</td>
-<td align="right">0.0006041</td>
-<td align="right">-5.571241</td>
-<td align="right">0</td>
-<td align="right">0.0094726</td>
-</tr>
-</tbody></table>
-
+</tbody>
+</table>
 <p>We can also list the information for each CpG site in these regions.</p>
-
-<pre><code class="r">sites &lt;- dmrff.sites(dmrs, stats$chr, stats$pos)
+<pre><code class="language-r">sites &lt;- dmrff.sites(dmrs, stats$chr, stats$pos)
 sites &lt;- cbind(sites, stats[sites$site, c(&quot;UCSC_RefGene_Name&quot;, &quot;estimate&quot;, &quot;p.value&quot;)])
 sites &lt;- cbind(sites, dmr=dmrs[sites$region,c(&quot;start&quot;,&quot;end&quot;,&quot;z&quot;,&quot;p.adjust&quot;)])
 </code></pre>
-
 <p>Here are the sites in the largest DMR:</p>
-
-<pre><code class="r">max.region &lt;- which.max(dmrs$n)
+<pre><code class="language-r">max.region &lt;- which.max(dmrs$n)
 kable(sites[which(sites$region == max.region),],row.names=F)
 </code></pre>
-
-<table><thead>
+<table>
+<thead>
 <tr>
 <th align="right">region</th>
 <th align="right">site</th>
@@ -562,620 +595,710 @@ kable(sites[which(sites$region == max.region),],row.names=F)
 <th align="right">dmr.z</th>
 <th align="right">dmr.p.adjust</th>
 </tr>
-</thead><tbody>
+</thead>
+<tbody>
 <tr>
-<td align="right">4</td>
-<td align="right">206488</td>
+<td align="right">5</td>
+<td align="right">403116</td>
 <td align="left">chr6</td>
-<td align="right">32013699</td>
-<td align="left">TNXB;TNXB;TNXB</td>
-<td align="right">0.0033248</td>
-<td align="right">0.0013753</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
-</tr>
-<tr>
-<td align="right">4</td>
-<td align="right">259872</td>
-<td align="left">chr6</td>
-<td align="right">32013710</td>
-<td align="left">TNXB;TNXB;TNXB</td>
-<td align="right">0.0039750</td>
-<td align="right">0.0001142</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
-</tr>
-<tr>
-<td align="right">4</td>
-<td align="right">253108</td>
-<td align="left">chr6</td>
-<td align="right">32013974</td>
-<td align="left">TNXB;TNXB</td>
-<td align="right">0.0007077</td>
-<td align="right">0.1580097</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
-</tr>
-<tr>
-<td align="right">4</td>
-<td align="right">76731</td>
-<td align="left">chr6</td>
-<td align="right">32014003</td>
-<td align="left">TNXB;TNXB</td>
-<td align="right">0.0014911</td>
-<td align="right">0.0152387</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
-</tr>
-<tr>
-<td align="right">4</td>
-<td align="right">132640</td>
-<td align="left">chr6</td>
-<td align="right">32014148</td>
-<td align="left">TNXB;TNXB</td>
-<td align="right">0.0016923</td>
-<td align="right">0.0819380</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
-</tr>
-<tr>
-<td align="right">4</td>
-<td align="right">300117</td>
-<td align="left">chr6</td>
-<td align="right">32014189</td>
-<td align="left">TNXB;TNXB</td>
-<td align="right">0.0020784</td>
-<td align="right">0.0073160</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
-</tr>
-<tr>
-<td align="right">4</td>
-<td align="right">83714</td>
-<td align="left">chr6</td>
-<td align="right">32014300</td>
-<td align="left">TNXB;TNXB</td>
-<td align="right">0.0016903</td>
-<td align="right">0.0294514</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
-</tr>
-<tr>
-<td align="right">4</td>
-<td align="right">246136</td>
-<td align="left">chr6</td>
-<td align="right">32014476</td>
-<td align="left">TNXB;TNXB</td>
-<td align="right">0.0013224</td>
-<td align="right">0.5403594</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
-</tr>
-<tr>
-<td align="right">4</td>
-<td align="right">271379</td>
-<td align="left">chr6</td>
-<td align="right">32014484</td>
-<td align="left">TNXB;TNXB</td>
-<td align="right">0.0007101</td>
-<td align="right">0.5998312</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
-</tr>
-<tr>
-<td align="right">4</td>
-<td align="right">145379</td>
-<td align="left">chr6</td>
-<td align="right">32014510</td>
-<td align="left">TNXB;TNXB</td>
-<td align="right">0.0016457</td>
-<td align="right">0.2082371</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
-</tr>
-<tr>
-<td align="right">4</td>
-<td align="right">174594</td>
-<td align="left">chr6</td>
-<td align="right">32014605</td>
-<td align="left">TNXB;TNXB</td>
-<td align="right">-0.0001531</td>
-<td align="right">0.8101197</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
-</tr>
-<tr>
-<td align="right">4</td>
-<td align="right">180049</td>
-<td align="left">chr6</td>
-<td align="right">32014663</td>
-<td align="left">TNXB;TNXB</td>
-<td align="right">0.0029876</td>
-<td align="right">0.0015277</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
-</tr>
-<tr>
-<td align="right">4</td>
-<td align="right">172312</td>
-<td align="left">chr6</td>
-<td align="right">32014674</td>
-<td align="left">TNXB;TNXB</td>
-<td align="right">0.0009082</td>
-<td align="right">0.3807045</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
-</tr>
-<tr>
-<td align="right">4</td>
-<td align="right">144588</td>
-<td align="left">chr6</td>
-<td align="right">32014893</td>
-<td align="left">TNXB;TNXB</td>
-<td align="right">0.0021443</td>
-<td align="right">0.0006677</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
-</tr>
-<tr>
-<td align="right">4</td>
-<td align="right">254656</td>
-<td align="left">chr6</td>
-<td align="right">32014926</td>
-<td align="left">TNXB;TNXB</td>
-<td align="right">0.0007943</td>
-<td align="right">0.0784213</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
-</tr>
-<tr>
-<td align="right">4</td>
-<td align="right">96182</td>
-<td align="left">chr6</td>
-<td align="right">32015083</td>
-<td align="left">TNXB;TNXB</td>
-<td align="right">0.0012410</td>
-<td align="right">0.1573622</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
-</tr>
-<tr>
-<td align="right">4</td>
-<td align="right">251549</td>
-<td align="left">chr6</td>
-<td align="right">32015175</td>
-<td align="left">TNXB;TNXB</td>
-<td align="right">0.0004095</td>
-<td align="right">0.4306034</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
-</tr>
-<tr>
-<td align="right">4</td>
-<td align="right">228450</td>
-<td align="left">chr6</td>
-<td align="right">32015215</td>
-<td align="left">TNXB;TNXB</td>
-<td align="right">0.0004607</td>
-<td align="right">0.3710192</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
-</tr>
-<tr>
-<td align="right">4</td>
-<td align="right">214234</td>
-<td align="left">chr6</td>
-<td align="right">32015297</td>
-<td align="left">TNXB;TNXB</td>
-<td align="right">0.0030980</td>
-<td align="right">0.0001455</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
-</tr>
-<tr>
-<td align="right">4</td>
-<td align="right">53331</td>
-<td align="left">chr6</td>
-<td align="right">32015618</td>
+<td align="right">32036179</td>
 <td align="left">TNXB</td>
-<td align="right">0.0001046</td>
-<td align="right">0.8517118</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
+<td align="right">0.0010315</td>
+<td align="right">0.0109635</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
 </tr>
 <tr>
-<td align="right">4</td>
-<td align="right">190142</td>
+<td align="right">5</td>
+<td align="right">418198</td>
 <td align="left">chr6</td>
-<td align="right">32015688</td>
+<td align="right">32036258</td>
 <td align="left">TNXB</td>
-<td align="right">0.0010612</td>
-<td align="right">0.0066559</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
+<td align="right">0.0000935</td>
+<td align="right">0.8952558</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
 </tr>
 <tr>
-<td align="right">4</td>
-<td align="right">141947</td>
+<td align="right">5</td>
+<td align="right">409882</td>
 <td align="left">chr6</td>
-<td align="right">32015713</td>
+<td align="right">32036278</td>
 <td align="left">TNXB</td>
-<td align="right">0.0014876</td>
-<td align="right">0.0432615</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
+<td align="right">0.0005737</td>
+<td align="right">0.4059512</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
 </tr>
 <tr>
-<td align="right">4</td>
-<td align="right">98162</td>
+<td align="right">5</td>
+<td align="right">70316</td>
 <td align="left">chr6</td>
-<td align="right">32015737</td>
+<td align="right">32036356</td>
 <td align="left">TNXB</td>
-<td align="right">0.0013062</td>
-<td align="right">0.0218474</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
+<td align="right">0.0076859</td>
+<td align="right">0.0305838</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
 </tr>
 <tr>
-<td align="right">4</td>
-<td align="right">46174</td>
+<td align="right">5</td>
+<td align="right">44051</td>
 <td align="left">chr6</td>
-<td align="right">32015773</td>
+<td align="right">32036404</td>
 <td align="left">TNXB</td>
-<td align="right">0.0021020</td>
-<td align="right">0.0396521</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
+<td align="right">0.0007714</td>
+<td align="right">0.2085628</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
 </tr>
 <tr>
-<td align="right">4</td>
-<td align="right">253689</td>
+<td align="right">5</td>
+<td align="right">465690</td>
 <td align="left">chr6</td>
-<td align="right">32016070</td>
+<td align="right">32036449</td>
 <td align="left">TNXB</td>
-<td align="right">0.0004271</td>
-<td align="right">0.4273317</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
+<td align="right">0.0009136</td>
+<td align="right">0.0543140</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
 </tr>
 <tr>
-<td align="right">4</td>
-<td align="right">289210</td>
+<td align="right">5</td>
+<td align="right">356956</td>
 <td align="left">chr6</td>
-<td align="right">32016100</td>
+<td align="right">32036530</td>
 <td align="left">TNXB</td>
-<td align="right">0.0001844</td>
-<td align="right">0.5002354</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
+<td align="right">0.0008525</td>
+<td align="right">0.1268730</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
 </tr>
 <tr>
-<td align="right">4</td>
-<td align="right">288177</td>
+<td align="right">5</td>
+<td align="right">406883</td>
 <td align="left">chr6</td>
-<td align="right">32016115</td>
+<td align="right">32036532</td>
 <td align="left">TNXB</td>
-<td align="right">-0.0002369</td>
-<td align="right">0.4819618</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
+<td align="right">0.0012313</td>
+<td align="right">0.0300202</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
 </tr>
 <tr>
-<td align="right">4</td>
-<td align="right">312500</td>
+<td align="right">5</td>
+<td align="right">90566</td>
 <td align="left">chr6</td>
-<td align="right">32016172</td>
+<td align="right">32036611</td>
 <td align="left">TNXB</td>
-<td align="right">0.0004049</td>
-<td align="right">0.5155801</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
+<td align="right">0.0006175</td>
+<td align="right">0.2440241</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
 </tr>
 <tr>
-<td align="right">4</td>
-<td align="right">49395</td>
+<td align="right">5</td>
+<td align="right">14425</td>
 <td align="left">chr6</td>
-<td align="right">32016214</td>
+<td align="right">32036677</td>
 <td align="left">TNXB</td>
-<td align="right">0.0016431</td>
-<td align="right">0.0583541</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
+<td align="right">0.0024381</td>
+<td align="right">0.2242297</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
 </tr>
 <tr>
-<td align="right">4</td>
-<td align="right">215071</td>
+<td align="right">5</td>
+<td align="right">338599</td>
 <td align="left">chr6</td>
-<td align="right">32016239</td>
+<td align="right">32036709</td>
 <td align="left">TNXB</td>
-<td align="right">0.0025661</td>
-<td align="right">0.1157791</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
+<td align="right">0.0000897</td>
+<td align="right">0.8567340</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
 </tr>
 <tr>
-<td align="right">4</td>
-<td align="right">166791</td>
+<td align="right">5</td>
+<td align="right">351435</td>
 <td align="left">chr6</td>
-<td align="right">32016247</td>
+<td align="right">32036724</td>
 <td align="left">TNXB</td>
-<td align="right">0.0019620</td>
-<td align="right">0.0495010</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
+<td align="right">0.0000125</td>
+<td align="right">0.9839411</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
 </tr>
 <tr>
-<td align="right">4</td>
-<td align="right">108179</td>
+<td align="right">5</td>
+<td align="right">301883</td>
 <td align="left">chr6</td>
-<td align="right">32016257</td>
+<td align="right">32036743</td>
 <td align="left">TNXB</td>
-<td align="right">0.0024417</td>
-<td align="right">0.0048269</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
+<td align="right">0.0006430</td>
+<td align="right">0.2947373</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
 </tr>
 <tr>
-<td align="right">4</td>
-<td align="right">291014</td>
+<td align="right">5</td>
+<td align="right">231708</td>
 <td align="left">chr6</td>
-<td align="right">32016288</td>
+<td align="right">32036822</td>
 <td align="left">TNXB</td>
-<td align="right">0.0033794</td>
-<td align="right">0.0000426</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
+<td align="right">0.0037987</td>
+<td align="right">0.0000617</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
 </tr>
 <tr>
-<td align="right">4</td>
-<td align="right">243825</td>
+<td align="right">5</td>
+<td align="right">462157</td>
 <td align="left">chr6</td>
-<td align="right">32016290</td>
+<td align="right">32036848</td>
 <td align="left">TNXB</td>
-<td align="right">0.0019575</td>
-<td align="right">0.0083271</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
+<td align="right">0.0008652</td>
+<td align="right">0.2164398</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
 </tr>
 <tr>
-<td align="right">4</td>
-<td align="right">104944</td>
+<td align="right">5</td>
+<td align="right">390942</td>
 <td align="left">chr6</td>
-<td align="right">32016360</td>
+<td align="right">32036897</td>
 <td align="left">TNXB</td>
-<td align="right">0.0000404</td>
-<td align="right">0.9559929</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
+<td align="right">0.0010422</td>
+<td align="right">0.1459314</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
 </tr>
 <tr>
-<td align="right">4</td>
-<td align="right">180966</td>
+<td align="right">5</td>
+<td align="right">475183</td>
 <td align="left">chr6</td>
-<td align="right">32016368</td>
+<td align="right">32036911</td>
 <td align="left">TNXB</td>
-<td align="right">0.0012041</td>
-<td align="right">0.2480942</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
+<td align="right">-0.0001132</td>
+<td align="right">0.8998336</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
 </tr>
 <tr>
-<td align="right">4</td>
-<td align="right">85924</td>
+<td align="right">5</td>
+<td align="right">330755</td>
 <td align="left">chr6</td>
-<td align="right">32016426</td>
+<td align="right">32036954</td>
 <td align="left">TNXB</td>
-<td align="right">0.0021802</td>
-<td align="right">0.0132794</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
+<td align="right">0.0028732</td>
+<td align="right">0.0002115</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
 </tr>
 <tr>
-<td align="right">4</td>
-<td align="right">198624</td>
+<td align="right">5</td>
+<td align="right">240567</td>
 <td align="left">chr6</td>
-<td align="right">32016473</td>
+<td align="right">32037018</td>
 <td align="left">TNXB</td>
-<td align="right">0.0009756</td>
-<td align="right">0.0614283</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
+<td align="right">0.0024086</td>
+<td align="right">0.0001065</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
 </tr>
 <tr>
-<td align="right">4</td>
-<td align="right">15233</td>
+<td align="right">5</td>
+<td align="right">291118</td>
 <td align="left">chr6</td>
-<td align="right">32016520</td>
+<td align="right">32037097</td>
 <td align="left">TNXB</td>
-<td align="right">0.0002999</td>
-<td align="right">0.5368667</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
+<td align="right">-0.0003098</td>
+<td align="right">0.9055158</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
 </tr>
 <tr>
-<td align="right">4</td>
-<td align="right">283755</td>
+<td align="right">5</td>
+<td align="right">352756</td>
 <td align="left">chr6</td>
-<td align="right">32016535</td>
+<td align="right">32037148</td>
 <td align="left">TNXB</td>
-<td align="right">-0.0005487</td>
-<td align="right">0.4551498</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
+<td align="right">0.0009316</td>
+<td align="right">0.1774843</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
 </tr>
 <tr>
-<td align="right">4</td>
-<td align="right">155224</td>
+<td align="right">5</td>
+<td align="right">103583</td>
 <td align="left">chr6</td>
-<td align="right">32016678</td>
+<td align="right">32037290</td>
 <td align="left">TNXB</td>
-<td align="right">0.0003520</td>
-<td align="right">0.5391198</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
+<td align="right">0.0020771</td>
+<td align="right">0.0009626</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
 </tr>
 <tr>
-<td align="right">4</td>
-<td align="right">216005</td>
+<td align="right">5</td>
+<td align="right">138987</td>
 <td align="left">chr6</td>
-<td align="right">32016690</td>
+<td align="right">32037339</td>
 <td align="left">TNXB</td>
-<td align="right">-0.0002819</td>
-<td align="right">0.6021935</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
+<td align="right">0.0012636</td>
+<td align="right">0.0084907</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
 </tr>
 <tr>
-<td align="right">4</td>
-<td align="right">237173</td>
+<td align="right">5</td>
+<td align="right">38523</td>
 <td align="left">chr6</td>
-<td align="right">32016803</td>
+<td align="right">32037342</td>
 <td align="left">TNXB</td>
-<td align="right">0.0015205</td>
-<td align="right">0.0448445</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
+<td align="right">0.0017828</td>
+<td align="right">0.0004507</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
 </tr>
 <tr>
-<td align="right">4</td>
-<td align="right">296767</td>
+<td align="right">5</td>
+<td align="right">417928</td>
 <td align="left">chr6</td>
-<td align="right">32017024</td>
+<td align="right">32037421</td>
 <td align="left">TNXB</td>
-<td align="right">0.0015014</td>
-<td align="right">0.1116998</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
+<td align="right">0.0006383</td>
+<td align="right">0.2333117</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
 </tr>
 <tr>
-<td align="right">4</td>
-<td align="right">204967</td>
+<td align="right">5</td>
+<td align="right">160017</td>
 <td align="left">chr6</td>
-<td align="right">32017079</td>
+<td align="right">32037426</td>
 <td align="left">TNXB</td>
-<td align="right">0.0010082</td>
-<td align="right">0.0341457</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
+<td align="right">0.0009770</td>
+<td align="right">0.1394028</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
 </tr>
 <tr>
-<td align="right">4</td>
-<td align="right">290092</td>
+<td align="right">5</td>
+<td align="right">179334</td>
 <td align="left">chr6</td>
-<td align="right">32017089</td>
+<td align="right">32037453</td>
 <td align="left">TNXB</td>
-<td align="right">0.0009824</td>
-<td align="right">0.0197532</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
+<td align="right">0.0011397</td>
+<td align="right">0.0251615</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
 </tr>
 <tr>
-<td align="right">4</td>
-<td align="right">233696</td>
+<td align="right">5</td>
+<td align="right">379817</td>
 <td align="left">chr6</td>
-<td align="right">32017224</td>
+<td align="right">32037474</td>
 <td align="left">TNXB</td>
-<td align="right">0.0006594</td>
-<td align="right">0.2466544</td>
-<td align="right">32013699</td>
-<td align="right">32017224</td>
-<td align="right">-5.943456</td>
-<td align="right">0.0010452</td>
+<td align="right">0.0004407</td>
+<td align="right">0.4323696</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
 </tr>
-</tbody></table>
+<tr>
+<td align="right">5</td>
+<td align="right">52129</td>
+<td align="left">chr6</td>
+<td align="right">32037587</td>
+<td align="left">TNXB</td>
+<td align="right">0.0009903</td>
+<td align="right">0.1194331</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">60243</td>
+<td align="left">chr6</td>
+<td align="right">32037602</td>
+<td align="left">TNXB</td>
+<td align="right">0.0004996</td>
+<td align="right">0.4616771</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">272610</td>
+<td align="left">chr6</td>
+<td align="right">32037632</td>
+<td align="left">TNXB</td>
+<td align="right">0.0002757</td>
+<td align="right">0.6319254</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">386420</td>
+<td align="left">chr6</td>
+<td align="right">32037653</td>
+<td align="left">TNXB</td>
+<td align="right">0.0010359</td>
+<td align="right">0.0942346</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">300711</td>
+<td align="left">chr6</td>
+<td align="right">32037735</td>
+<td align="left">TNXB</td>
+<td align="right">0.0015226</td>
+<td align="right">0.0277306</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">428514</td>
+<td align="left">chr6</td>
+<td align="right">32037751</td>
+<td align="left">TNXB</td>
+<td align="right">0.0003291</td>
+<td align="right">0.5704414</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">110400</td>
+<td align="left">chr6</td>
+<td align="right">32037800</td>
+<td align="left">TNXB</td>
+<td align="right">-0.0004129</td>
+<td align="right">0.7202410</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">449994</td>
+<td align="left">chr6</td>
+<td align="right">32037847</td>
+<td align="left">TNXB</td>
+<td align="right">0.0028153</td>
+<td align="right">0.0000569</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">76776</td>
+<td align="left">chr6</td>
+<td align="right">32037913</td>
+<td align="left">TNXB</td>
+<td align="right">0.0006452</td>
+<td align="right">0.1327238</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">87741</td>
+<td align="left">chr6</td>
+<td align="right">32037916</td>
+<td align="left">TNXB</td>
+<td align="right">0.0014233</td>
+<td align="right">0.0020986</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">444167</td>
+<td align="left">chr6</td>
+<td align="right">32037978</td>
+<td align="left">TNXB</td>
+<td align="right">0.0012293</td>
+<td align="right">0.0209276</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">5081</td>
+<td align="left">chr6</td>
+<td align="right">32038011</td>
+<td align="left">TNXB</td>
+<td align="right">-0.0010160</td>
+<td align="right">0.2819558</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">448813</td>
+<td align="left">chr6</td>
+<td align="right">32038027</td>
+<td align="left">TNXB</td>
+<td align="right">0.0017132</td>
+<td align="right">0.0062513</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">298918</td>
+<td align="left">chr6</td>
+<td align="right">32038045</td>
+<td align="left">TNXB</td>
+<td align="right">0.0009735</td>
+<td align="right">0.3071656</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">416617</td>
+<td align="left">chr6</td>
+<td align="right">32038097</td>
+<td align="left">TNXB</td>
+<td align="right">0.0008797</td>
+<td align="right">0.1731802</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">434939</td>
+<td align="left">chr6</td>
+<td align="right">32038155</td>
+<td align="left">TNXB</td>
+<td align="right">0.0018101</td>
+<td align="right">0.0032325</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">470733</td>
+<td align="left">chr6</td>
+<td align="right">32038177</td>
+<td align="left">TNXB</td>
+<td align="right">0.0023991</td>
+<td align="right">0.0048218</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">337001</td>
+<td align="left">chr6</td>
+<td align="right">32038185</td>
+<td align="left">TNXB</td>
+<td align="right">0.0025098</td>
+<td align="right">0.0009209</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">389831</td>
+<td align="left">chr6</td>
+<td align="right">32038230</td>
+<td align="left">TNXB</td>
+<td align="right">0.0016509</td>
+<td align="right">0.0134805</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">276348</td>
+<td align="left">chr6</td>
+<td align="right">32038462</td>
+<td align="left">TNXB</td>
+<td align="right">0.0010248</td>
+<td align="right">0.0718441</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">374532</td>
+<td align="left">chr6</td>
+<td align="right">32038541</td>
+<td align="left">TNXB</td>
+<td align="right">0.0027082</td>
+<td align="right">0.0002163</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">272153</td>
+<td align="left">chr6</td>
+<td align="right">32038747</td>
+<td align="left">TNXB</td>
+<td align="right">0.0028779</td>
+<td align="right">0.0028012</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">411763</td>
+<td align="left">chr6</td>
+<td align="right">32038881</td>
+<td align="left">TNXB</td>
+<td align="right">0.0020330</td>
+<td align="right">0.0027048</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">254265</td>
+<td align="left">chr6</td>
+<td align="right">32038887</td>
+<td align="left">TNXB</td>
+<td align="right">0.0006585</td>
+<td align="right">0.3466269</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td align="right">13100</td>
+<td align="left">chr6</td>
+<td align="right">32038958</td>
+<td align="left">TNXB</td>
+<td align="right">0.0026444</td>
+<td align="right">0.0000209</td>
+<td align="right">32036179</td>
+<td align="right">32038958</td>
+<td align="right">7.705565</td>
+<td align="right">0</td>
+</tr>
+</tbody>
+</table>
+<p>Here we generate a simple plot of the largest DMR:</p>
+<pre><code class="language-r">dmrff.plot(
+    dmrs$chr[max.region], dmrs$start[max.region], dmrs$end[max.region],
+    stats$estimate, stats$se, stats$chr, stats$pos, ci=T, expand=1)
+</code></pre>
+<pre><code>## Loading required package: ggplot2
+</code></pre>
+<p><img src="data:image/png;base64,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" alt="plot of chunk unnamed-chunk-16" /></p>
 
+
+<script src="https://cdn.jsdelivr.net/combine/npm/@xiee/utils/js/center-img.min.js" async></script>
 </body>
 
 </html>
