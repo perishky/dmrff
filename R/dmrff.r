@@ -137,6 +137,7 @@ collate.stats <- function(stats, chr, pos, simple=F) {
             p.value=2*pnorm(-abs(z), lower.tail=T))
     })
     number.tests <- length(chr) + calculate.number.shrink.tests(stats)
+    stats$number.tests <- number.tests
     stats$p.adjust <- pmin(1, stats$p.value * number.tests)
     if (simple)
         stats$start.idx <- stats$end.idx <- stats$start.orig <- stats$end.orig <- stats$z.orig <- stats$p.orig <- NULL
